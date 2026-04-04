@@ -1,0 +1,302 @@
+/* ========================================================== */
+/*  🎨 GIAO DIỆN "CONTRAST" - SIDEBAR TỐI & NỘI DUNG SÁNG 🎨   */
+/* ========================================================== */
+
+/* 1. 🎨 BẢNG MÀU KẾT HỢP */
+:root {
+    /* Màu thương hiệu (giữ nguyên) */
+    --careerpath-green: #28a745;
+    --careerpath-green-darker: #1e7e34;
+    --careerpath-yellow: #ffc107;
+
+    /* --- Bảng màu cho Sidebar TỐI --- */
+    --sidebar-bg: #21262d;            /* Nền sidebar xám đen */
+    --sidebar-text: #9da5b0;          /* Chữ phụ, icon (xám) */
+    --sidebar-text-primary: #e6edf3;  /* Chữ chính, hover (trắng ngà) */
+    --sidebar-border: rgba(255, 255, 255, 0.1);
+    
+    /* --- Bảng màu cho Nội dung SÁNG --- */
+    --content-bg: #f4f6f9;            /* Nền nội dung chính xám rất nhạt */
+    --card-bg: #ffffff;               /* Nền card trắng */
+    --content-text: #343a40;          /* Chữ trên nền sáng (đen) */
+    --content-border: #e9ecef;        /* Viền trên nền sáng */
+    --card-shadow: rgba(0, 0, 0, 0.05);
+}
+
+
+/* 2. ✨ SIDEBAR NỀN TỐI (Lấy từ Dark Mode) */
+
+/* --- Nền chung và viền --- */
+.main-sidebar, .sidebar {
+    background-color: var(--sidebar-bg) !important;
+    border-right: 1px solid var(--sidebar-border) !important;
+}
+
+/* --- Logo & Thương hiệu --- */
+.brand-link {
+    display: flex; align-items: center; justify-content: flex-start;
+    gap: 0.8rem; padding-left: 1.2rem !important;
+    border-bottom: 1px solid var(--sidebar-border) !important;
+}
+.brand-link .brand-image { display: none !important; }
+.brand-link::before {
+    font-family: "Font Awesome 5 Free"; font-weight: 900;
+    content: "\f4d7"; /* icon fa-route */
+    font-size: 1.5rem; color: var(--careerpath-green);
+    text-shadow: 0 0 10px rgba(40, 167, 69, 0.5);
+}
+.brand-link .brand-text {
+    font-weight: 600 !important; color: var(--sidebar-text-primary) !important;
+}
+.main-sidebar .brand-link {
+    position: -webkit-sticky; position: sticky;
+    top: 0; z-index: 10;
+    background-color: var(--sidebar-bg);
+}
+
+
+/* --- CÁC MỤC MENU --- */
+
+/* Trạng thái mặc định: Chữ trắng sáng */
+.nav-sidebar .nav-item > .nav-link {
+    color: var(--sidebar-text-primary) !important; /* ĐỔI SANG MÀU CHỮ TRẮNG */
+    transition: background-color 0.2s ease, color 0.2s ease;
+    border-radius: 6px; /* Bo góc nhẹ cho đẹp */
+    margin: 2px 8px;    /* Tạo khoảng cách giữa các mục */
+    padding-left: 0.8rem !important;
+}
+
+/* Tiêu đề của app (Quản lý User, Premium...) */
+.nav-pills .nav-header {
+    color: var(--sidebar-text); /* Giữ màu xám cho tiêu đề */
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding-left: 1.2rem;
+}
+
+
+/* Trạng thái Hover: Nền tối hơn một chút */
+.nav-sidebar .nav-item:not(.menu-open) > .nav-link:hover {
+    background-color: rgba(255, 255, 255, 0.05) !important;
+    color: var(--sidebar-text-primary) !important; /* Chữ vẫn trắng */
+}
+
+
+/* --- TRẠNG THÁI ACTIVE: NỀN XANH, CHỮ TRẮNG --- */
+
+/* Bộ chọn hợp nhất cho TẤT CẢ các mục menu khi active */
+.sidebar-dark-charcoal .nav-sidebar > .nav-item > .nav-link.active,
+.sidebar-dark-charcoal .nav-sidebar > .nav-item.nav-item-dashboard.active > a.nav-link {
+    /* --- THAY ĐỔI CHÍNH --- */
+    background-color: var(--careerpath-green) !important;  /* Nền xanh lá */
+    color: #ffffff !important;                            /* Chữ trắng */
+    
+    /* Các style khác */
+    font-weight: 600;
+    box-shadow: 0 4px 15px rgba(40, 167, 69, 0.4); /* Đổ bóng màu xanh lá */
+    
+    /* Bỏ các hiệu ứng cũ, giữ thẳng hàng */
+    border-left: none;
+    /* padding-left đã được set ở trên */
+}
+
+/* Đảm bảo icon khi active cũng có màu trắng */
+.sidebar-dark-charcoal .nav-sidebar > .nav-item > .nav-link.active .nav-icon,
+.sidebar-dark-charcoal .nav-sidebar > .nav-item.nav-item-dashboard.active > a.nav-link .nav-icon {
+    color: #ffffff !important;
+}
+.nav-sidebar .nav-item > .nav-link.active .nav-icon {
+    color: var(--careerpath-green) !important;
+}
+
+.main-sidebar .brand-link {
+    position: -webkit-sticky; position: sticky;
+    top: 0; z-index: 10;
+    background-color: var(--sidebar-bg);
+}
+
+
+/* 3. 💎 GIAO DIỆN CHÍNH SÁNG SỦA (Lấy từ Light Mode) */
+
+/* --- Thanh header trên cùng --- */
+.main-header {
+    background-color: var(--sidebar-bg) !important; /* #21262d */
+    border-bottom: 1px solid var(--sidebar-border) !important;
+    box-shadow: none !important; /* bỏ bóng cho phẳng màu */
+}
+
+/* Tăng chiều cao header để khớp sidebar top */
+.main-header.navbar {
+    min-height: 64px;
+    display: flex;
+    align-items: center;
+    padding-top: 0;
+    padding-bottom: 0;
+}
+
+
+/* Chữ menu trên header */
+.main-header .navbar-nav .nav-link {
+    font-weight: 600;
+    color: var(--sidebar-text-primary) !important; /* trắng ngà như menu bên */
+    transition: all 0.2s ease-in-out;
+}
+
+/* Hover chữ */
+.main-header .navbar-nav .nav-link:hover {
+    color: var(--careerpath-green) !important; /* xanh lá thương hiệu */
+}
+
+/* Active menu */
+.main-header .navbar-nav .nav-link.active {
+    background-color: rgba(40, 167, 69, 0.15);
+    color: var(--careerpath-green) !important;
+    border-radius: 6px;
+    padding: 6px 12px;
+    position: relative;
+}
+
+/* Gạch dưới khi active */
+.main-header .navbar-nav .nav-link.active::after {
+    content: "";
+    position: absolute;
+    bottom: 2px;
+    left: 10%;
+    width: 80%;
+    height: 3px;
+    background-color: var(--careerpath-green);
+    border-radius: 2px;
+}
+
+
+/* --- "Pill" người dùng --- */
+.main-header .user-menu > .nav-link {
+    display: flex; align-items: center; gap: 10px;
+    border: 1px solid var(--content-border); border-radius: 999px;
+    padding: 6px 10px;
+}
+.main-header .user-menu > .nav-link:hover { background: var(--content-bg); }
+.main-header .user-menu .user-image { width: 28px; height: 28px; object-fit: cover; border-radius: 50%; }
+.main-header .user-menu .d-none.d-md-inline { display: inline !important; font-weight: 600; color: var(--content-text); }
+
+
+/* --- Nền khu vực nội dung chính --- */
+.content-wrapper {
+    background-color: var(--content-bg) !important;
+}
+
+/* --- Card nội dung --- */
+.card {
+    background-color: var(--card-bg) !important;
+    border: 1px solid var(--content-border) !important;
+    border-radius: 0.5rem !important;
+    box-shadow: 0 1px 2px var(--card-shadow) !important;
+    color: var(--content-text); /* Chữ trong card phải là màu tối */
+}
+.card-header { border-bottom-color: var(--content-border) !important; }
+.card-title { color: var(--content-text) !important; }
+
+/* Bảng, form, ... bên trong cũng phải có style của nền sáng */
+h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6 { color: var(--content-text); }
+.table, .form-control, .form-control:focus, .select2-container--default .select2-selection--single {
+    color: var(--content-text) !important;
+    background-color: #fff !important;
+    border-color: var(--content-border) !important;
+}
+label, .form-text { color: var(--content-text) !important; opacity: 0.8; }
+
+
+/* 4. 🚀 NÚT BẤM (Giữ nguyên, vẫn hoạt động tốt) */
+.btn-primary {
+    background-color: var(--careerpath-green) !important;
+    border-color: var(--careerpath-green) !important;
+    color: #fff !important;
+    transition: all 0.2s ease;
+}
+.btn-primary:hover, .btn-primary:focus {
+    background-color: var(--careerpath-green-darker) !important;
+    border-color: var(--careerpath-green-darker) !important;
+    transform: translateY(-2px);
+}
+.object-tools .addlink, .changelist-foot .addlink {
+    background-color: var(--careerpath-yellow) !important;
+    border-color: var(--careerpath-yellow) !important;
+    color: #212529 !important;
+    transition: all 0.2s ease;
+}
+.object-tools .addlink:hover, .changelist-foot .addlink:hover {
+    background-color: #e0a800 !important;
+    border-color: #d39e00 !important;
+    transform: translateY(-2px);
+}
+
+
+/* Đổi màu tiêu đề phần app/model trong Jazzmin */
+.breadcrumb-item.active,
+.breadcrumb-item a {
+    color: #222 !important;  /* chữ đậm hơn, dễ nhìn */
+}
+
+/* Hoặc chỉnh trực tiếp tiêu đề h1 của trang admin */
+#content h1,
+#content-main h1 {
+    color: #1a1a1a !important; /* đen đậm */
+}
+
+/* Nếu muốn highlight */
+.page-title, .breadcrumbs {
+    background-color: #f5f5f5; /* nền xám nhạt */
+    padding: 6px 12px;
+    border-radius: 4px;
+}
+
+/* Tiêu đề ở header Jazzmin (AdminLTE) — thường có .text-white */
+.content-header h1,
+.content-header .container-fluid h1,
+.content-header .text-white {           /* <- chốt hạ */
+  color: #111 !important;
+  text-shadow: none !important;
+}
+
+/* Breadcrumb cũng làm tối */
+.content-header .breadcrumb .breadcrumb-item,
+.content-header .breadcrumb .breadcrumb-item a {
+  color: #495057 !important;
+}
+
+
+/* Đổi màu tiêu đề phần app/model trong Jazzmin */
+.breadcrumb-item.active,
+.breadcrumb-item a {
+    color: #222 !important;  /* chữ đậm hơn, dễ nhìn */
+}
+
+/* Hoặc chỉnh trực tiếp tiêu đề h1 của trang admin */
+#content h1,
+#content-main h1 {
+    color: #1a1a1a !important; /* đen đậm */
+}
+
+/* Nếu muốn highlight */
+.page-title, .breadcrumbs {
+    background-color: #f5f5f5; /* nền xám nhạt */
+    padding: 6px 12px;
+    border-radius: 4px;
+}
+
+/* Tiêu đề ở header Jazzmin (AdminLTE) — thường có .text-white */
+.content-header h1,
+.content-header .container-fluid h1,
+.content-header .text-white {           /* <- chốt hạ */
+  color: #111 !important;
+  text-shadow: none !important;
+}
+
+/* Breadcrumb cũng làm tối */
+.content-header .breadcrumb .breadcrumb-item,
+.content-header .breadcrumb .breadcrumb-item a {
+  color: #495057 !important;
+}
+
+

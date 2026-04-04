@@ -1,0 +1,176 @@
+/* Card Premium */
+/* Card Premium */
+.premium-section {
+    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    padding: 80px 0;
+    color: #222;
+}
+
+.premium-section .container {
+    max-width: 1140px;
+}
+
+.premium-section .section-title {
+    color: #111;
+    font-weight: 700;
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+    line-height: 1.3;
+    text-align: center;
+}
+
+.premium-section p {
+    color: #444;
+    font-size: 1.1rem;
+    margin-bottom: 2rem;
+    text-align: center;
+}
+
+/* Card setup */
+.premium-section .card {
+    background-color: #fff;
+    border-radius: 20px;
+    padding: 2.5rem 2rem;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    color: #111;
+    transition: box-shadow 0.3s ease, transform 0.3s ease;
+    min-height: 460px; /* Tăng chiều cao cho đều nhau */
+}
+
+.premium-section .card:hover {
+    box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+    transform: translateY(-12px) scale(1.03);
+}
+
+.premium-section .card h4 {
+    font-weight: 700;
+    font-size: 1.9rem;
+    margin-bottom: 1.5rem;
+    text-align: center;
+}
+
+/* Giá tiền căn chỉnh */
+.premium-section .price {
+    display: flex;
+    justify-content: center;
+    align-items: baseline;
+    font-size: 2.8rem; /* Giảm kích thước số tiền */
+    font-weight: 900;
+    letter-spacing: 1.5px;
+    margin-bottom: 1.8rem;
+    gap: 4px;
+    color: #000; /* Màu số tiền */
+}
+
+.premium-section .price sup {
+    font-size: 2.8rem; /* Kích thước bằng số tiền */
+    line-height: 1;
+    vertical-align: baseline;
+    color: #000; /* Màu ký hiệu đồng đen */
+    margin-left: 0; /* Không cách xa số tiền */
+    font-weight: 900;
+}
+
+.premium-section .price span {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: #666;
+    margin-left: 8px;
+    align-self: flex-end;
+}
+
+
+
+
+/* Danh sách lợi ích */
+.premium-section ul {
+    list-style-type: disc;
+    padding-left: 1.8rem;
+    margin-bottom: 2rem;
+    font-size: 1.1rem;
+    color: #333;
+    text-align: left;
+}
+
+/* Nút bấm */
+.premium-section .btn-warning {
+    background-color: #ffc107;
+    border: none;
+    font-weight: 700;
+    color: #333;
+    border-radius: 50px;
+    padding: 0.85rem 3.5rem;
+    text-transform: uppercase;
+    transition: background-color 0.3s ease;
+    box-shadow: 0 6px 14px rgba(255, 193, 7, 0.7);
+    align-self: center; /* Canh giữa nút */
+    font-size: 1.1rem;
+    letter-spacing: 0.9px;
+}
+
+.premium-section .btn-warning:hover {
+    background-color: #e0a800;
+    color: #fff;
+    cursor: pointer;
+    box-shadow: 0 8px 20px rgba(224, 168, 0, 0.9);
+}
+
+/* Link Learn more */
+.premium-section a.text-decoration-underline {
+    display: inline-block;
+    margin-top: 1.5rem;
+    font-weight: 700;
+    color: #28a745;
+    font-size: 1rem;
+    text-align: center;
+    transition: color 0.3s ease;
+}
+
+.premium-section a.text-decoration-underline:hover {
+    color: #19692c;
+    text-decoration: underline;
+    cursor: pointer;
+}
+
+/* Responsive */
+@media (max-width: 991px) {
+    .premium-section .card {
+        min-height: auto;
+        padding: 2rem 1.5rem;
+    }
+    .premium-section .price {
+        font-size: 3rem;
+    }
+    .premium-section .price sup,
+    .premium-section .price span {
+        font-size: 3rem;
+    }
+}
+
+@media (max-width: 767px) {
+    .premium-section .card {
+        margin-bottom: 30px;
+        padding: 1.5rem 1.2rem;
+    }
+    .premium-section .card h4 {
+        font-size: 1.6rem;
+    }
+    .premium-section .price {
+        font-size: 2.5rem;
+    }
+    .premium-section .price sup,
+    .premium-section .price span {
+        font-size: 2.5rem;
+    }
+    .premium-section ul {
+        font-size: 1rem;
+        padding-left: 1.5rem;
+    }
+    .premium-section .btn-warning {
+        padding: 0.7rem 2.5rem;
+        font-size: 1rem;
+    }
+}

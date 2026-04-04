@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Lỗi Thanh Toán - CareerPath{% endblock %}
+
+{% block content %}
+<section class="premium-section text-center py-5">
+    <div class="container">
+        <h2 class="fw-bold mb-3">Lỗi Thanh Toán 😔</h2>
+        <p class="lead mb-4">{{ error }}</p>
+        <a href="{% url 'premium:renew_premium' %}" class="btn btn-primary btn-lg">Thử lại</a>
+        <a href="{% url 'home' %}" class="btn btn-secondary btn-lg">Quay về trang chủ</a>
+    </div>
+</section>
+{% endblock %}

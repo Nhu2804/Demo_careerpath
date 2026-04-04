@@ -1,0 +1,154 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load humanize %}
+{% block title %}Thanh Toán Premium - CareerPath{% endblock %}
+
+{% block content %}
+<head>
+  <!-- Giữ CSS chung -->
+  <link rel="stylesheet" href="{% static 'css/premium.css' %}">
+  <!-- Thêm CSS cho trang thanh toán -->
+  <link rel="stylesheet" href="{% static 'css/premium-payment-qr.css' %}">
+</head>
+
+<section class="premium-section py-5">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-9 col-md-11 text-center">
+                <h2 class="section-title fw-bold mb-3">Hoàn Tất Thanh Toán</h2>
+                <p class="lead-line mb-4">
+                    Quét mã QR hoặc chuyển khoản với số tiền <strong>{{ amount|intcomma }}₫</strong> để kích hoạt <strong>{{ months }} tháng Premium</strong>.
+                </p>
+            </div>
+        </div>
+
+        <div class="row justify-content-center mt-3">
+            <div class="col-lg-10">
+                <!-- Card thanh toán chính -->
+                <div id="payment-card" class="payment-card">
+                    <!-- Trạng thái đang tải -->
+                    <div id="loading-spinner" class="text-center">
+                        <div class="spinner-border text-warning" role="status" style="width: 3rem; height: 3rem;">
+                            <span class="visually-hidden">Đang tạo thông tin thanh toán...</span>
+                        </div>
+                        <p class="mt-3 text-muted">Đang tạo thông tin thanh toán, vui lòng chờ...</p>
+                    </div>
+
+                    <!-- Nội dung thanh toán (ẩn ban đầu) -->
+                    <div id="payment-content" class="payment-layout" style="display: none;">
+                        
+                        <!-- Cột 1: Mã QR -->
+                        <div class="col-lg-5 qr-code-wrapper">
+                            <h5>Quét mã để thanh toán nhanh</h5>
+                            <img id="qr-code-image" alt="QR Code thanh toán" class="qr-code-image">
+                        </div>
+
+                        <!-- Cột 2: Thông tin chi tiết -->
+                        <div class="col-lg-7 payment-details-wrapper">
+                            <ul class="info-list">
+                                <li>
+                                    <span class="text-muted">Ngân hàng</span>
+                                    <strong id="bank-name"></strong>
+                                </li>
+                                <li>
+                                    <span class="text-muted">Số tài khoản</span>
+                                    <strong id="account-number"></strong>
+                                </li>
+                                <li>
+                                    <span class="text-muted">Chủ tài khoản</span>
+                                    <strong id="account-name"></strong>
+                                </li>
+                                <li>
+                                    <span class="text-muted">Mã giao dịch</span>
+                                    <strong id="order-id" class="text-success"></strong>
+                                </li>
+                            </ul>
+
+                            <!-- Nội dung chuyển khoản -->
+                            <div class="transfer-memo">
+                                <p>Nội dung chuyển khoản</p>
+                                <h5 id="description" class="user-select-all"></h5>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Thông báo thành công/lỗi -->
+                    <div id="success-message" style="display: none;" class="alert alert-success m-4 text-center"><i class="bi bi-check-circle-fill"></i> Thanh toán thành công! Premium đã được kích hoạt. Trang sẽ tự chuyển hướng...</div>
+                    <div id="error-message" style="display: none;" class="alert alert-danger m-4 text-center"><i class="bi bi-exclamation-triangle-fill"></i> Có lỗi xảy ra. Vui lòng tải lại trang.</div>
+                </div>
+
+                <!-- Nút quay về -->
+                 <div class="final-actions">
+                    <a href="{% url 'home' %}" class="btn btn-secondary px-4">Quay về trang chủ</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const loadingSpinner = document.getElementById('loading-spinner');
+    const paymentContent = document.getElementById('payment-content');
+    const successMessage = document.getElementById('success-message');
+    const errorMessage = document.getElementById('error-message');
+
+    // Gọi API để lấy thông tin thanh toán ngay khi trang tải
+    fetch("{% url 'premium:initiate_payment' %}", {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': '{{ csrf_token }}',
+        },
+        body: JSON.stringify({
+            months: {{ months }},
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        loadingSpinner.style.display = 'none';
+
+        if (data.status === 'success') {
+            // Hiển thị thông tin
+            paymentContent.style.display = 'flex'; // Sử dụng flex để layout hoạt động
+            document.getElementById('order-id').textContent = data.order_id;
+            document.getElementById('bank-name').textContent = data.bank_name;
+            document.getElementById('account-number').textContent = data.account_number;
+            document.getElementById('account-name').textContent = data.account_name;
+            document.getElementById('description').textContent = data.description;
+            document.getElementById('qr-code-image').src = 'data:image/png;base64,' + data.qr_code;
+
+            // Bắt đầu kiểm tra trạng thái thanh toán
+            const orderId = data.order_id;
+            const interval = setInterval(() => {
+                fetch(`{% url 'premium:check_payment' 'dummy' %}`.replace('dummy', orderId))
+                .then(res => res.json())
+                .then(statusData => {
+                    if (statusData.status === 'completed') {
+                        clearInterval(interval);
+                        paymentContent.style.display = 'none';
+                        successMessage.style.display = 'block';
+                        setTimeout(() => { window.location.href = '{% url "premium:premium_home" %}'; }, 4000); // Chuyển hướng sau 4s
+                    } else if (statusData.status === 'failed') {
+                        clearInterval(interval);
+                        paymentContent.style.display = 'none';
+                        errorMessage.style.display = 'block';
+                        errorMessage.textContent = 'Thanh toán thất bại hoặc đã hết hạn. Vui lòng tải lại trang để thử lại.';
+                    }
+                });
+            }, 5000); // Kiểm tra mỗi 5 giây
+
+        } else {
+            errorMessage.style.display = 'block';
+            errorMessage.textContent = 'Lỗi khởi tạo thanh toán: ' + data.message;
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        loadingSpinner.style.display = 'none';
+        errorMessage.style.display = 'block';
+        errorMessage.textContent = 'Đã xảy ra lỗi kết nối. Vui lòng kiểm tra lại đường truyền và tải lại trang.';
+    });
+});
+</script>
+{% endblock %}

@@ -1,0 +1,154 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load humanize %}
+{% block title %}{{ page_title }} - CareerPath{% endblock %}
+
+{% block content %}
+<head>
+  <!-- Trỏ đến file CSS mới, nhất quán -->
+  <link rel="stylesheet" href="{% static 'css/renew-premium.css' %}">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+
+<main class="premium-page section-padding">
+  <div class="container">
+    
+    <!-- === KHU VỰC TIÊU ĐỀ CHÍNH (Giữ nguyên) === -->
+    <div class="premium-header text-center">
+      <h2 class="premium-main-title">
+        {% if is_first_time %}Chọn Gói Premium Phù Hợp{% else %}Gia Hạn Premium{% endif %}
+      </h2>
+      <p class="premium-subtitle">
+        {{ hero_subtitle }}
+      </p>
+      <div class="section-divider"></div> 
+    </div>
+
+    <!-- Bố cục 2 cột, căn giữa theo chiều dọc -->
+    <div class="row align-items-center justify-content-center g-5">
+      
+      <!-- Cột 1: Lợi ích (Giữ nguyên cấu trúc đã đẹp) -->
+      <div class="col-lg-7">
+        <div class="benefits-grid">
+          <div class="benefit-card-premium">
+            <div class="benefit-icon-wrapper"><i class="fas fa-user-astronaut"></i></div>
+            <div class="benefit-content">
+              <h5 class="benefit-title">Báo Cáo Phân Tích Chuyên Sâu</h5>
+              <p class="benefit-description">Nhận bản phân tích chi tiết về 2 nhóm ngành phù hợp nhất, giải mã điểm mạnh, điểm yếu và tiềm năng phát triển của bạn.</p>
+            </div>
+          </div>
+          <div class="benefit-card-premium">
+            <div class="benefit-icon-wrapper"><i class="fas fa-road-spikes"></i></div>
+            <div class="benefit-content">
+              <h5 class="benefit-title">Lộ Trình Phát Triển Cá Nhân Hóa</h5>
+              <p class="benefit-description">Gợi ý các kỹ năng, khóa học, và hoạt động ngoại khóa cụ thể để bạn xây dựng hồ sơ năng lực ấn tượng, phù hợp với ngành mục tiêu.</p>
+            </div>
+          </div>
+          <div class="benefit-card-premium">
+            <div class="benefit-icon-wrapper"><i class="fas fa-chart-line"></i></div>
+            <div class="benefit-content">
+              <h5 class="benefit-title">Đón Đầu Xu Hướng Ngành Nghề</h5>
+              <p class="benefit-description">Truy cập các báo cáo độc quyền về xu hướng thị trường lao động, các ngành nghề triển vọng trong tương lai để bạn luôn đi trước một bước.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Cột 2: Form lựa chọn gói (Áp dụng style mới) -->
+      <div class="col-lg-5">
+        <div class="pricing-card-reimagined">
+          <form id="renew-form" method="post" novalidate>
+            {% csrf_token %}
+            
+            <div class="user-info-box">
+              <p><i class="fas fa-user-circle"></i> <strong>{{ user.first_name }} {{ user.last_name }}</strong></p>
+              <p><i class="fas fa-envelope"></i> <strong>{{ user.email }}</strong></p>
+            </div>
+
+            <h4 class="form-section-title">Chọn thời hạn của bạn</h4>
+            
+            <div class="plan-options-wrapper">
+              {% for p in plans %}
+                <label class="plan-option-card">
+                  <input type="radio" name="months" value="{{ p.months }}" data-price="{{ p.price }}" {% if forloop.first %}checked{% endif %}>
+                  <div class="plan-radio-visual"></div>
+                  <div class="plan-details">
+                    <span class="plan-title">Gói {{ p.months }} Tháng</span>
+                    {% if p.saving_pct > 0 %}
+                      <span class="plan-savings">Tiết kiệm {{ p.saving_pct }}%</span>
+                    {% endif %}
+                  </div>
+                  <span class="plan-price">{{ p.price|intcomma }}<span class="currency">₫</span></span>
+                  {% if p.months == 3 %}<div class="best-value-badge badge-blue"></div>{% endif %}
+                  {% if p.months == 6 %}<div class="best-value-badge badge-yellow"></div>{% endif %}
+                </label>
+              {% endfor %}
+            </div>
+
+            <!-- Sử dụng lại nút bấm từ trang Premium -->
+            <button type="submit" class="btn btn-premium-cta mt-4">
+              <span id="cta-button-text">
+                {% with first_plan=plans.0 %}
+                  {% if is_first_time %}Thanh toán{% else %}Gia hạn với{% endif %} {{ first_plan.price|intcomma }}₫
+                {% endwith %}
+              </span>
+            </button>
+
+
+            <p class="security-notice">
+              <i class="fas fa-shield-alt"></i> Thanh toán một lần, an toàn và bảo mật.
+            </p>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<!-- JavaScript giữ nguyên, chỉ chỉnh selector cho đúng -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('renew-form');
+    const options = form.querySelectorAll('.plan-option-card'); 
+    const ctaButtonText = document.getElementById('cta-button-text');
+    const ctaLabel = "{% if is_first_time %}Thanh toán{% else %}Gia hạn với{% endif %}";
+
+    // === Thêm: format tất cả giá trong danh sách gói về dạng 29.000₫ ===
+    function formatPlanPrices() {
+        document.querySelectorAll('.plan-price').forEach(el => {
+            // Lấy số từ nội dung (bỏ mọi ký tự không phải số)
+            const raw = el.textContent.replace(/[^\d]/g, '');
+            const num = parseInt(raw, 10);
+            if (!isNaN(num)) {
+                const formatted = num.toLocaleString('vi-VN');
+                el.innerHTML = formatted + '<span class="currency">₫</span>';
+            }
+        });
+    }
+
+    function updateSelection() {
+        let selectedRadio = form.querySelector('input[name="months"]:checked');
+        
+        options.forEach(opt => {
+            opt.classList.toggle('selected', opt.contains(selectedRadio));
+        });
+        
+        if (selectedRadio) {
+            const price = parseInt(selectedRadio.dataset.price, 10);
+            const formattedPrice = price.toLocaleString('vi-VN') + '₫';
+            ctaButtonText.textContent = `${ctaLabel} ${formattedPrice}`;
+        }
+    }
+
+    form.querySelectorAll('input[name="months"]').forEach(radio => {
+        radio.addEventListener('change', updateSelection);
+    });
+
+    // Gọi format giá cho danh sách gói (một lần khi load)
+    formatPlanPrices();
+
+    updateSelection();
+});
+</script>
+
+{% endblock %}

@@ -1,0 +1,474 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Kết Quả Đánh Giá Kỹ Năng - CareerPath{% endblock %}
+
+{% block content %}
+
+{# Link đến file CSS mới dành riêng cho trang này #}
+<link rel="stylesheet" href="{% static 'css/quiz_university.css' %}">
+
+<main class="result-page section-padding">
+  <div class="container result-container">
+    <!-- ✨ HEADER NÂNG CẤP - GRADIENT ICONS & ELEVATED ✨ -->
+    <div class="integrated-header-upgraded">
+        
+        <!-- Cột bên trái: Thông tin văn bản -->
+        <div class="info-content-upgraded">
+            <div class="result-heading-wrapper">
+                <div class="icon-container">
+                    <svg class="heading-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M3 3v18h18M9 17V9m4 8V5m4 12v-6" />
+                    </svg>
+                </div>
+                <h2 class="result-heading">Báo Cáo Đánh Giá Kỹ Năng</h2>
+            </div>
+            
+            <div class="cluster-display">
+                <svg class="cluster-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                  <path d="M10.496 2.165a1 1 0 00-.992 0L2.27 6.132a1 1 0 000 1.736l7.234 3.967a1 1 0 00.992 0l7.234-3.967a1 1 0 000-1.736L10.496 2.165z" />
+                  <path d="M19 13.5v-2.25a1 1 0 00-.553-.894l-7.5-4.125a1 1 0 00-.894 0l-7.5 4.125a1 1 0 00-.553.894V13.5a1 1 0 00.553.894l7.5 4.125a1 1 0 00.894 0l7.5-4.125a1 1 0 00.553-.894z" />
+                </svg>
+                <span>Lĩnh vực:</span> 
+                <span class="tag">{{ selected_cluster_name|default:'Phát triển Web' }}</span>
+            </div>
+        </div>
+
+        <!-- Cột bên phải: Vòng tròn kết quả -->
+        <div class="metric-container">
+            <div class="progress-ring-wrapper" id="readiness-progress" data-score="{{ readiness_score|default:78 }}">
+                <svg class="progress-ring-svg" viewBox="0 0 120 120">
+                    <defs>
+                        <linearGradient id="upgraded-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" style="stop-color:var(--primary-yellow, #ffc107);" />
+                            <stop offset="100%" style="stop-color:var(--primary-green, #28a745);" />
+                        </linearGradient>
+                    </defs>
+                    <circle class="progress-ring-bg" cx="60" cy="60" r="54" stroke-width="12" fill="transparent" />
+                    <circle class="progress-ring-circle progress-ring-fg" cx="60" cy="60" r="54" stroke-width="12" fill="transparent" />
+                </svg>
+                <div class="progress-ring-text">
+                    <span class="score">{{ readiness_score|default:78 }}%</span>
+                </div>
+            </div>
+            <span class="metric-label">Sẵn Sàng</span>
+        </div>
+
+    </div>
+    <!-- END HEADER UPGRADED -->
+
+
+    <!-- ======================================================= -->
+    <!-- ✨ BỐ CỤC MỚI: SIDEBAR TABS ✨ -->
+    <!-- ======================================================= -->
+    <div class="main-content-area-sidebar"> <!-- <== Đổi tên class chính -->
+
+        <!-- Cột 1: Bảng điều khiển tab dạng thanh bên -->
+        <div class="tabs-control-panel">
+            <button class="tab active" onclick="showTab('overview')">
+                <i class="fas fa-chart-pie"></i> <!-- Icon mới cho hợp -->
+                <span>Tổng Quan</span>
+            </button>
+            <button class="tab" onclick="showTab('detailed')">
+                <i class="fas fa-stream"></i>
+                <span>Phân Tích</span>
+            </button>
+            <!-- Bạn có thể dễ dàng thêm các tab mới ở đây nếu cần -->
+        </div>
+
+        <!-- Cột 2: Vùng chứa nội dung của các tab -->
+        <div class="content-display-area">
+          <!-- ================== TAB TỔNG QUAN (Bố cục Trên-Dưới) ================== -->
+          <div id="overview" class="tab-content active">
+              <!-- Đổi tên class để thể hiện rõ mục đích mới -->
+              <div class="result-wrapper-vertical">
+
+                  <!-- Hàng trên: Phân bố kỹ năng -->
+                  <div class="info-card">
+                      <div class="card-header">
+                          <i class="fas fa-chart-bar card-icon"></i>
+                          <h3 class="card-title">Phân Bố Kỹ Năng</h3>
+                      </div>
+                      <div class="card-body">
+                          <div class="result-bars">
+                              {% for skill, score in skill_scores.items %}
+                              <div class="skill-progress-item">
+                                  <div class="skill-info">
+                                      <span class="skill-name">{{ skill }}</span>
+                                      <span class="skill-score">{{ score }}%</span>
+                                  </div>
+                                  <div class="bar">
+                                      <div class="fill" style="width:{{ score }}%;" data-percentage="{{ score }}"></div>
+                                  </div>
+                              </div>
+                              {% endfor %}
+                          </div>
+                      </div>
+                  </div>
+
+                  <!-- Hàng dưới: Phân tích & Gợi ý -->
+                  <div class="info-card">
+                      <div class="card-header">
+                          <i class="fas fa-lightbulb card-icon"></i>
+                          <h3 class="card-title">Phân Tích Nhanh</h3>
+                      </div>
+                      <div class="card-body">
+                          <div class="analysis-report">
+                              {{ analysis_html|safe }}
+                          </div>
+                      </div>
+                  </div>
+
+              </div>
+            </div>
+
+            <!-- ================== TAB PHÂN TÍCH CHI TIẾT ================== -->
+            <div id="detailed" class="tab-content">
+                <!-- Vùng chứa nội dung gốc, sẽ được JS xử lý -->
+                
+                  {{ detailed_analysis_html|safe }}
+
+                  {% if not is_premium %}
+                  <div class="premium-overlay premium-overlay--content">
+                    <div class="premium-overlay-content">
+                      <i class="fas fa-crown"></i>
+                      <p>Hãy sử dụng Premium để xem</p>
+                      <a class="btn-premium" href="{% url 'premium:renew_premium' %}">Nâng cấp ngay</a>
+                    </div>
+                  </div>
+                  {% endif %}
+                
+            </div>
+        </div>
+
+    </div>
+
+  </div>
+    <!-- KHUNG TRẮNG SỐ 2: ĐÁNH GIÁ (GIAO DIỆN V4 - COMPACT FORM) -->
+  <div class="container" id="final-evaluation">
+      <!-- Wrapper mới cho form nhỏ gọn -->
+      <div class="feedback-compact-form-v4"
+          data-quiz-type="{{ quiz_type|default:'university' }}"
+          data-quiz-id="{{ quiz_id|default:'' }}">
+
+          <!-- Hàng 1: Các ngôi sao -->
+          <div class="stars" role="radiogroup" aria-label="Đánh giá 1 đến 5 sao">
+              <button type="button" class="star" aria-checked="false" aria-label="1 sao" data-rating="1">★</button>
+              <button type="button" class="star" aria-checked="false" aria-label="2 sao" data-rating="2">★</button>
+              <button type="button" class="star" aria-checked="false" aria-label="3 sao" data-rating="3">★</button>
+              <button type="button" class="star" aria-checked="false" aria-label="4 sao" data-rating="4">★</button>
+              <button type="button" class="star" aria-checked="false" aria-label="5 sao" data-rating="5">★</button>
+              <span class="rating-text">Bạn thấy hữu ích chứ?</span>
+          </div>
+
+          <!-- Hàng 2: Ô comment và nút gửi -->
+          <div class="comment-action-wrapper-v4">
+              <div class="input-wrapper-v4">
+                  <i class="fas fa-pen input-icon-v4"></i>
+                  <!-- Input giờ có placeholder là một khoảng trắng -->
+                  <input type="text" id="fb-comment" maxlength="500" placeholder=" " aria-label="Nội dung đánh giá">
+                  <!-- Label mới được thêm vào để tạo hiệu ứng -->
+                  <label for="fb-comment" class="floating-label">Chia sẻ trải nghiệm của bạn...</label>
+              </div>
+              <button id="fb-submit" class="btn-submit-v4" disabled>
+                  <span class="loading" hidden></span>
+                  <span>Gửi</span>
+              </button>
+          </div>
+          
+          <span id="fb-status" class="muted" role="status" aria-live="polite"></span>
+      </div>
+  </div>
+</main>
+<div id="toast-container"></div>
+
+<script>
+  // Hàm chuyển tab
+  function showTab(tabId) {
+      // Lấy tất cả các nút tab và các khối nội dung
+      const tabs = document.querySelectorAll(".tabs-control-panel .tab");
+      const contents = document.querySelectorAll(".content-display-area .tab-content"); // <== Sửa selector một chút cho chính xác hơn
+      
+      // Bỏ lớp 'active' khỏi tất cả các nút và nội dung
+      tabs.forEach(btn => btn.classList.remove("active"));
+      contents.forEach(c => {
+        c.classList.remove("active");
+        // CSS sẽ lo việc opacity và transform
+      });
+      
+      // Tìm nút tab và khối nội dung được chọn
+      const selectedTab = document.querySelector(`.tab[onclick="showTab('${tabId}')"]`);
+      const selectedContent = document.getElementById(tabId);
+      
+      // Thêm lớp 'active' vào nút và nội dung được chọn
+      if (selectedTab) {
+        selectedTab.classList.add("active");
+      }
+      
+      if (selectedContent) {
+        // Chỉ cần thêm class 'active', CSS sẽ tự động tạo animation
+        selectedContent.classList.add("active");
+      }
+
+      // Chạy các hàm đặc biệt cho từng tab nếu có
+      if (tabId === 'detailed') {
+        if (typeof restructureDetailedAnalysis === 'function') {
+          restructureDetailedAnalysis();
+        }
+      }
+  }
+
+  // Script animation cho thanh tiến trình
+  document.addEventListener("DOMContentLoaded", () => {
+    document.querySelectorAll(".fill").forEach(bar => {
+      const percentage = bar.dataset.percentage;
+      bar.style.width = "0%";
+      setTimeout(() => {
+        bar.style.width = `${percentage}%`;
+      }, 300);
+    });
+  });
+
+  /**
+   * PHÉP THUẬT JAVASCRIPT: Tự động biến đổi HTML chi tiết thành giao diện timeline.
+   * Chỉ chạy một lần để tối ưu hiệu suất.
+   */
+  function restructureDetailedAnalysis() {
+    const container = document.getElementById('timeline-container');
+    // Nếu đã xử lý rồi thì không chạy lại
+    if (container.hasAttribute('data-processed')) {
+      return;
+    }
+
+    const source = document.getElementById('original-detailed-content');
+    if (!source) return;
+
+    const timeline = document.createElement('div');
+    timeline.className = 'analysis-step-list';
+
+    // Xác định các tiêu đề để chia nhỏ nội dung
+    const headers = source.querySelectorAll('h3, h4');
+    const icons = ['fas fa-book-open', 'fas fa-users-gear', 'fas fa-lightbulb', 'fas fa-bullseye', 'fas fa-chart-line'];
+    const colors = ['icon-bg-teal', 'icon-bg-sky', 'icon-bg-violet', 'icon-bg-rose', 'icon-bg-amber'];
+    let iconIndex = 0;
+
+    headers.forEach((header, index) => {
+      const step = document.createElement('div');
+      step.className = 'analysis-step';
+
+      // 1. Tạo phần trực quan (icon và đường kẻ)
+      const visual = document.createElement('div');
+      visual.className = 'step-visual';
+      
+      const iconWrapper = document.createElement('div');
+      iconWrapper.className = `step-icon-wrapper ${colors[iconIndex % colors.length]}`;
+      iconWrapper.innerHTML = `<i class="${icons[iconIndex % icons.length]}"></i>`;
+      visual.appendChild(iconWrapper);
+      
+      const line = document.createElement('div');
+      line.className = 'step-line';
+      visual.appendChild(line);
+      step.appendChild(visual);
+
+      // 2. Tạo thẻ nội dung
+      const content = document.createElement('div');
+      content.className = 'step-content';
+      
+      const card = document.createElement('div');
+      card.className = 'step-content-card';
+
+      const title = document.createElement('div');
+      title.className = 'step-title';
+      title.innerHTML = `${header.textContent}`;
+      card.appendChild(title);
+      
+      const body = document.createElement('div');
+      body.className = 'step-body';
+      
+      // Lấy tất cả các phần tử giữa tiêu đề này và tiêu đề tiếp theo
+      let sibling = header.nextElementSibling;
+      while (sibling && sibling.tagName !== 'H3' && sibling.tagName !== 'H4') {
+        body.appendChild(sibling.cloneNode(true));
+        sibling = sibling.nextElementSibling;
+      }
+      
+      card.appendChild(body);
+      content.appendChild(card);
+      step.appendChild(content);
+      
+      timeline.appendChild(step);
+      iconIndex++;
+    });
+
+    container.appendChild(timeline);
+    container.setAttribute('data-processed', 'true');
+  }
+
+    // --- SCRIPT CHO ANIMATION VÒNG TRÒN TIẾN ĐỘ ---
+  function animateProgressRing() {
+    const wrapper = document.getElementById('readiness-progress');
+    if (!wrapper) return;
+
+    const score = parseInt(wrapper.dataset.score, 10);
+    const circle = wrapper.querySelector('.progress-ring-circle');
+    const radius = circle.r.baseVal.value;
+    const circumference = 2 * Math.PI * radius;
+    const offset = circumference - (score / 100) * circumference;
+
+    circle.style.strokeDasharray = `${circumference} ${circumference}`;
+    // Bắt đầu với vòng tròn trống
+    circle.style.strokeDashoffset = circumference;
+    // Kích hoạt animation
+    setTimeout(() => {
+        circle.style.strokeDashoffset = offset;
+    }, 300);
+  }
+
+  // Sửa lại hàm DOMContentLoaded để gọi cả hai animation
+  document.addEventListener("DOMContentLoaded", () => {
+    // Animation cho thanh ngang
+    document.querySelectorAll(".fill").forEach(bar => {
+      const percentage = bar.dataset.percentage;
+      bar.style.width = "0%";
+      setTimeout(() => {
+        bar.style.width = `${percentage}%`;
+      }, 300);
+    });
+
+    // Animation cho vòng tròn
+    animateProgressRing();
+  });
+
+
+  // =======================================================
+// === SCRIPT MỚI: TOAST NOTIFICATION & ĐÁNH GIÁ ===
+// =======================================================
+
+/**
+ * Hiển thị một thông báo Toast
+ * @param {string} message - Nội dung thông báo
+ * @param {string} type - Loại thông báo ('success' hoặc 'error')
+ * @param {number} duration - Thời gian hiển thị (ms)
+ */
+function showToast(message, type = 'success', duration = 5000) {
+    const container = document.getElementById('toast-container');
+    if (!container) return;
+
+    const toast = document.createElement('div');
+    toast.className = `toast ${type}`;
+
+    const icons = {
+        success: '<i class="fas fa-check-circle"></i>',
+        error: '<i class="fas fa-times-circle"></i>'
+    };
+    
+    const titles = {
+        success: 'Thành công!',
+        error: 'Có lỗi xảy ra!'
+    }
+
+    toast.innerHTML = `
+        <div class="toast-icon">${icons[type]}</div>
+        <div class="toast-content">
+            <div class="title">${titles[type]}</div>
+            <div class="message">${message}</div>
+        </div>
+        <button class="toast-close">&times;</button>
+        <div class="toast-progress-bar"></div>
+    `;
+
+    container.appendChild(toast);
+
+    // Kích hoạt animation
+    setTimeout(() => {
+        toast.classList.add('show');
+    }, 100);
+
+    // Tự động đóng
+    const timeoutId = setTimeout(() => {
+        toast.classList.remove('show');
+        setTimeout(() => toast.remove(), 500); // Xóa khỏi DOM sau khi animation kết thúc
+    }, duration);
+
+    // Đóng khi click nút close
+    toast.querySelector('.toast-close').addEventListener('click', () => {
+        clearTimeout(timeoutId); // Hủy tự động đóng
+        toast.classList.remove('show');
+        setTimeout(() => toast.remove(), 500);
+    });
+}
+
+
+// Logic xử lý form đánh giá (PHIÊN BẢN SỬA LỖI CHO GIAO DIỆN V4)
+(function() {
+  const wrap = document.querySelector('.feedback-compact-form-v4');
+  if (!wrap) return;
+
+  const quizType = (wrap.dataset.quizType || '').toLowerCase();   // "university"
+  const quizId   = Number(wrap.dataset.quizId || 0);
+
+  const stars    = wrap.querySelectorAll('.star');
+  const submitBtn= wrap.querySelector('#fb-submit');
+  const commentEl= wrap.querySelector('#fb-comment');
+  const spinner  = submitBtn.querySelector('.loading');
+  const statusEl = wrap.querySelector('#fb-status');
+
+  let rating = 0;
+
+  function updateButtonState(){ submitBtn.disabled = !(rating >= 1 && rating <= 5); }
+
+  stars.forEach((btn) => {
+    btn.addEventListener('click', () => {
+      rating = parseInt(btn.dataset.rating, 10) || 0;
+      stars.forEach(b => {
+        const r = parseInt(b.dataset.rating, 10) || 0;
+        b.classList.toggle('active', r <= rating);
+        b.setAttribute('aria-checked', r <= rating ? 'true' : 'false');
+      });
+      updateButtonState();
+    });
+  });
+
+  submitBtn.addEventListener('click', async () => {
+    if (!quizType || !quizId) {
+      showToast('Thiếu thông tin bài trắc nghiệm để đánh giá.', 'error');
+      return;
+    }
+
+    const comment = (commentEl.value || '').trim();
+    submitBtn.disabled = true; spinner.hidden = false; if (statusEl) statusEl.textContent = '';
+
+    let ok = false;
+    try {
+      const res = await fetch("{% url 'quiz_highschool:save_feedback' %}", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-CSRFToken": "{{ csrf_token }}"
+        },
+        body: JSON.stringify({ quiz_type: quizType, quiz_id: quizId, rating, comment })
+      });
+      const data = await res.json();
+      ok = res.ok && data.ok;
+
+      if (ok) {
+        showToast('Cảm ơn bạn đã gửi đánh giá!', 'success');
+        commentEl.value = ""; rating = 0;
+        stars.forEach(b => { b.classList.remove('active'); b.setAttribute('aria-checked','false'); });
+        updateButtonState();
+      } else {
+        showToast((data && data.error) || 'Gửi đánh giá thất bại.', 'error');
+      }
+    } catch (e) {
+      showToast('Lỗi kết nối mạng. Vui lòng thử lại.', 'error');
+    } finally {
+      spinner.hidden = true;
+      if (!ok) submitBtn.disabled = false;
+    }
+  });
+
+  updateButtonState();
+})();
+  
+</script>
+{% endblock %}

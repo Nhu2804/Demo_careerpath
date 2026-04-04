@@ -1,0 +1,549 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Trang cá nhân{% endblock %}
+
+{% block content %}
+<link rel="stylesheet" href="{% static 'css/user.css' %}">
+<div class="profile-v4-wrapper">
+    <div class="profile-v4-container">
+        
+        <header class="profile-tabs">
+            <button class="tab-link active" data-tab="personal-info">
+                <i class="fas fa-user-circle"></i><span>Thông tin cá nhân</span>
+            </button>
+            <button class="tab-link" data-tab="test-results">
+                <i class="fas fa-poll-h"></i><span>Kết quả trắc nghiệm</span>
+            </button>
+        </header>
+
+        <main class="profile-v4-content">
+            
+            <div class="tab-content active" id="personal-info">
+                <div class="info-tab-layout">
+                    
+                    <aside class="info-tab-sidebar">
+                        <!-- ... (Phần avatar giữ nguyên) ... -->
+                        <div class="info-avatar-wrapper" id="avatar-wrapper">
+                            {% if user.avatar %}
+                                <img src="{{ user.avatar.url }}" alt="Ảnh đại diện" class="info-avatar" id="profile-avatar-img">
+                            {% else %}
+                                <div class="info-avatar-placeholder">
+                                    <span>{{ user.username|first|upper }}</span>
+                                </div>
+                            {% endif %}
+                            
+                            <form id="avatar-upload-form" style="display: none;">
+                                {% csrf_token %}
+                                <input type="file" id="avatar-input" name="avatar" accept="image/*">
+                            </form>
+                            <label for="avatar-input" class="info-avatar-upload-btn" title="Thay đổi ảnh đại diện">
+                                <i class="fas fa-camera"></i>
+                            </label>
+                            
+                            <div class="avatar-loader" id="avatar-loader"><div class="spinner"></div></div>
+                        </div>
+                    </aside>
+
+                    <!-- Cột phải của tab: Bảng thông tin chi tiết -->
+                    <div class="info-tab-details">
+                        
+                        <!-- =========== VIEW HIỂN THỊ THÔNG TIN (MẶC ĐỊNH) =========== -->
+                        <div id="display-info-view">
+                            <div class="info-header">
+                                <h3>Thông tin cơ bản</h3>
+                                <button id="edit-profile-btn" class="btn-edit-inline">
+                                    <i class="fas fa-pencil-alt"></i>
+                                    <span>Chỉnh sửa</span>
+                                </button>
+                            </div>
+                            <table class="info-table">
+                                <tbody>
+                                    <tr>
+                                        <td class="label"><i class="fas fa-user"></i> Họ và tên</td>
+                                        <td class="value" id="display-fullname">{{ user.first_name }} {{ user.last_name }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="label"><i class="fas fa-user-tag"></i> Tên người dùng</td>
+                                        <!-- [THAY ĐỔI 1]: Thêm ID vào đây -->
+                                        <td class="value" id="display-username">{{ user.username }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="label"><i class="fas fa-envelope"></i> Email</td>
+                                        <td class="value" id="display-email">{{ user.email }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="label"><i class="fas fa-calendar-alt"></i> Ngày tham gia</td>
+                                        <td class="value">{{ user.date_joined|date:"d/m/Y" }}</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- =========== VIEW CHỈNH SỬA THÔNG TIN (MẶC ĐỊNH ẨN) =========== -->
+                        <div id="edit-info-view" style="display: none;">
+                             <div class="info-header">
+                                <h3>Chỉnh sửa thông tin</h3>
+                            </div>
+                            <form id="profile-edit-form">
+                                {% csrf_token %}
+                                <table class="info-table editable">
+                                    <tbody>
+                                        <tr>
+                                            <td class="label"><i class="fas fa-user"></i> Họ</td>
+                                            <td class="value">
+                                                <input type="text" name="last_name" class="form-control-inline" value="{{ user.last_name }}">
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td class="label"><i class="fas fa-user"></i> Tên</td>
+                                            <td class="value">
+                                                <input type="text" name="first_name" class="form-control-inline" value="{{ user.first_name }}">
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td class="label"><i class="fas fa-user-tag"></i> Tên người dùng</td>
+                                            <td class="value">
+                                                <!-- [THAY ĐỔI 2]: Xóa readonly, disabled và title -->
+                                                <input type="text" name="username" class="form-control-inline" value="{{ user.username }}">
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td class="label"><i class="fas fa-envelope"></i> Email</td>
+                                            <td class="value">
+                                                <input type="email" name="email" class="form-control-inline" value="{{ user.email }}">
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                                <div class="form-actions">
+                                    <button type="button" id="cancel-edit-btn" class="btn btn-secondary">Hủy</button>
+                                    <button type="submit" id="save-profile-btn" class="btn btn-primary">Lưu thay đổi</button>
+                                </div>
+                            </form>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+
+            <!-- ======== TAB 2: LỊCH SỬ KẾT QUẢ TRẮC NGHIỆM (ĐÃ CẬP NHẬT) ======== -->
+            <div class="tab-content" id="test-results">
+
+                <!-- ==== PHẦN 1: HỌC SINH (KIỂU TIÊU ĐỀ CHIP) ==== -->
+                <div class="history-group">
+                    <h5 class="history-group-title theme-highschool">🧑‍🎓 Lịch sử trắc nghiệm học sinh</h5>
+                    {% if quiz_history_highschool %}
+                        <div class="quiz-history-list-v2">
+                            {% for quiz in quiz_history_highschool %}
+                            <!-- ... nội dung lặp for giữ nguyên ... -->
+                            <div class="quiz-history-item-v2">
+                                <div class="card-date">
+                                    <span class="day">{{ quiz.created_at|date:"d" }}</span>
+                                    <span class="month-year">{{ quiz.created_at|date:"M Y" }}</span>
+                                </div>
+                                <div class="card-info">
+                                    <div class="info-row top-result-row">
+                                        <i class="fas fa-trophy icon-gold"></i>
+                                        <p>Phù hợp nhất: <strong>{{ quiz.top_cluster_name }}</strong></p>
+                                        <span class="percentage-badge primary">{{ quiz.top_percentage }}%</span>
+                                    </div>
+                                    <div class="info-row">
+                                        <i class="fas fa-medal icon-silver"></i>
+                                        <p>Phù hợp thứ hai: <strong>{{ quiz.second_cluster_name }}</strong></p>
+                                        <span class="percentage-badge secondary">{{ quiz.second_percentage }}%</span>
+                                    </div>
+                                </div>
+                                <div class="card-actions">
+                                    <form method="get" action="{% url 'quiz_highschool:ket_qua' %}">
+                                        <input type="hidden" name="quiz_id" value="{{ quiz.id }}">
+                                        <button type="submit" class="btn-view-details" aria-label="Xem chi tiết kết quả ngày {{ quiz.created_at|date:'d-m-Y' }}">
+                                            Xem chi tiết <i class="fas fa-arrow-right"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="results-placeholder">
+                            <i class="fas fa-file-alt"></i>
+                            <p>Chưa có kết quả trắc nghiệm.</p>
+                        </div>
+                    {% endif %}
+                </div>
+
+                <!-- Đường kẻ ngang phân cách -->
+                <hr class="section-separator">
+
+                <!-- ==== PHẦN 2: SINH VIÊN (KIỂU TIÊU ĐỀ CHIP) ==== -->
+                <div class="history-group">
+                    <h5 class="history-group-title theme-university">🎓 Lịch sử trắc nghiệm sinh viên</h5>
+                    {% if quiz_history_university %}
+                        <div class="quiz-history-list-v2">
+                            {% for quiz in quiz_history_university %}
+                            <!-- ... nội dung lặp for giữ nguyên ... -->
+                            <div class="quiz-history-item-v2">
+                                <div class="card-date">
+                                    <span class="day">{{ quiz.updated_at|date:"d" }}</span>
+                                    <span class="month-year">{{ quiz.updated_at|date:"M Y" }}</span>
+                                </div>
+                                <div class="card-info">
+                                    <div class="info-row">
+                                        <i class="fas fa-briefcase icon-green"></i>
+                                        <p>Nhóm ngành đã chọn: <strong>{{ quiz.selected_cluster_name }}</strong></p>
+                                    </div>
+                                    <div class="info-row readiness-score-row">
+                                        <i class="fas fa-rocket icon-green"></i>
+                                        <p>Điểm sẵn sàng: <strong>{{ quiz.readiness_score }}%</strong></p>
+                                    </div>
+                                </div>
+                                <div class="card-actions">
+                                    <form method="get" action="{% url 'quiz_university:ket_qua_u' %}">
+                                        <input type="hidden" name="quiz_id" value="{{ quiz.id }}">
+                                        <button type="submit" class="btn-view-details" aria-label="Xem chi tiết kết quả ngày {{ quiz.updated_at|date:'d-m-Y' }}">
+                                            Xem chi tiết <i class="fas fa-arrow-right"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="results-placeholder">
+                            <i class="fas fa-file-alt"></i>
+                            <p>Chưa có kết quả trắc nghiệm.</p>
+                        </div>
+                    {% endif %}
+                </div>
+
+            </div>
+        </main>
+
+        <!-- ========================================================== -->
+        <!--   THÊM MỚI: XÓA TÀI KHOẢN   -->
+        <!-- ========================================================== -->
+        
+        <div class="profile-actions-footer">
+            <button id="open-delete-modal-btn" class="btn btn-danger">Xóa tài khoản</button>
+        </div>
+
+    </div> <!-- Đây là thẻ đóng của .profile-v4-container -->
+</div> <!-- Đây là thẻ đóng của .profile-v4-wrapper -->
+
+
+<!-- THÊM MỚI: HTML CỦA MODAL XÁC NHẬN (Đặt ở cuối file, trước <script>) -->
+<div id="delete-account-modal" class="modal-overlay">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Bạn có chắc chắn muốn xóa tài khoản?</h3>
+            <button class="modal-close-btn">×</button>
+        </div>
+        <div class="modal-body">
+            <!-- [THAY ĐỔI 1]: Bỏ phần yêu cầu nhập liệu -->
+            <p>Hành động này không thể được hoàn tác. Tất cả dữ liệu của bạn sẽ bị xóa vĩnh viễn.</p>
+            <p>Xin hãy chắc chắn trước khi tiếp tục.</p>
+        </div>
+        <div class="modal-footer">
+            <button id="cancel-delete-btn" class="btn btn-secondary">Hủy bỏ</button>
+            <!-- [THAY ĐỔI 2]: Bỏ thuộc tính 'disabled' -->
+            <button id="confirm-delete-btn" class="btn btn-danger">Xóa tài khoản</button>
+        </div>
+    </div>
+</div>
+<div id="toast-container"></div>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    
+    // ==========================================================
+    // HÀM TẠO TOAST NOTIFICATION NÂNG CAO (VERSION 2.0)
+    // ==========================================================
+    function showToast(message, type = 'success', duration = 5000) {
+        const container = document.getElementById('toast-container');
+        if (!container) return;
+
+        const toast = document.createElement('div');
+        toast.className = `toast ${type}`;
+
+        // Chọn icon và màu dựa trên 'type'
+        const icons = {
+            success: `
+                <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <!-- Vòng tròn nền màu xanh -->
+                    <circle cx="12" cy="12" r="11" fill="#28a745"/>
+                    <!-- Dấu tick màu trắng -->
+                    <path d="M9 12.75L11.25 15 15 9.75" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+                </svg>`,
+            error: `
+                <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <!-- Vòng tròn nền màu đỏ -->
+                    <circle cx="12" cy="12" r="11" fill="#EF4444"/>
+                    <!-- Dấu X màu trắng -->
+                    <path d="M15 9l-6 6M9 9l6 6" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+                </svg>`
+        };
+
+        toast.innerHTML = `
+            <div class="toast-icon">${icons[type]}</div>
+            <div class="toast-message">${message}</div>
+            <button class="toast-close">×</button>
+            <div class="toast-progress"><div class="toast-progress-bar"></div></div>
+        `;
+        
+        container.appendChild(toast);
+        
+        const progressBar = toast.querySelector('.toast-progress-bar');
+        progressBar.style.animationDuration = `${duration / 1000}s`;
+
+        let hideTimeout;
+        let remainingTime = duration;
+        let startTime = Date.now();
+
+        const hideToast = () => {
+            toast.classList.remove('show');
+            toast.addEventListener('transitionend', () => {
+                toast.remove();
+            }, { once: true });
+        };
+
+        const startAutoClose = () => {
+            hideTimeout = setTimeout(hideToast, remainingTime);
+        };
+
+        const pauseAutoClose = () => {
+            clearTimeout(hideTimeout);
+            remainingTime -= Date.now() - startTime;
+            progressBar.style.animationPlayState = 'paused';
+        };
+
+        const resumeAutoClose = () => {
+            startTime = Date.now();
+            progressBar.style.animationPlayState = 'running';
+            startAutoClose();
+        };
+
+        toast.addEventListener('mouseenter', pauseAutoClose);
+        toast.addEventListener('mouseleave', resumeAutoClose);
+
+        toast.querySelector('.toast-close').addEventListener('click', () => {
+            clearTimeout(hideTimeout);
+            hideToast();
+        });
+
+        // Bật toast mượt
+        setTimeout(() => {
+            toast.classList.add('show');
+            container.appendChild(toast);
+            startTime = Date.now();
+            startAutoClose();
+        }, 50);
+    }
+
+
+    // ==========================================================
+    // CODE LOGIC CŨ (GIỮ NGUYÊN, VẪN DÙNG showToast)
+    // ==========================================================
+    const tabLinks = document.querySelectorAll('.tab-link');
+    const tabContents = document.querySelectorAll('.tab-content');
+
+    tabLinks.forEach(link => {
+        link.addEventListener('click', () => {
+            const tabId = link.getAttribute('data-tab');
+            tabLinks.forEach(item => item.classList.remove('active'));
+            tabContents.forEach(item => item.classList.remove('active'));
+            link.classList.add('active');
+            document.getElementById(tabId).classList.add('active');
+        });
+    });
+
+    const avatarInput = document.getElementById('avatar-input');
+    const avatarWrapper = document.getElementById('avatar-wrapper');
+    const avatarLoader = document.getElementById('avatar-loader');
+    const avatarImg = document.getElementById('profile-avatar-img');
+    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+    if (avatarInput) {
+        avatarInput.addEventListener('change', function(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            if (file.size > 2 * 1024 * 1024) {
+                showToast('Lỗi: Kích thước ảnh không được vượt quá 2MB.', 'error');
+                this.value = ''; 
+                return;
+            }
+            
+            const formData = new FormData();
+            formData.append('avatar', file);
+            avatarLoader.style.display = 'flex';
+
+            fetch("{% url 'users:ajax_update_avatar' %}", {
+                method: 'POST',
+                body: formData,
+                headers: { 'X-CSRFToken': csrfToken, 'X-Requested-With': 'XMLHttpRequest' }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    avatarImg.src = data.new_avatar_url;
+                    const headerAvatar = document.getElementById('header-user-avatar');
+                    if(headerAvatar) headerAvatar.src = data.new_avatar_url;
+                    showToast('Cập nhật ảnh đại diện thành công!', 'success');
+                } else {
+                    showToast('Lỗi: ' + data.message, 'error');
+                }
+            })
+            .catch(error => {
+                console.error('Lỗi khi tải ảnh lên:', error);
+                showToast('Đã có lỗi không mong muốn xảy ra. Vui lòng thử lại.', 'error');
+            })
+            .finally(() => {
+                avatarLoader.style.display = 'none';
+                this.value = ''; 
+            });
+        });
+    }
+
+    const displayView = document.getElementById('display-info-view');
+    const editView = document.getElementById('edit-info-view');
+    const editBtn = document.getElementById('edit-profile-btn');
+    const cancelBtn = document.getElementById('cancel-edit-btn');
+    const profileEditForm = document.getElementById('profile-edit-form');
+
+    if (editBtn) {
+        editBtn.addEventListener('click', () => {
+            displayView.style.display = 'none';
+            editView.style.display = 'block';
+        });
+    }
+
+    if (cancelBtn) {
+        cancelBtn.addEventListener('click', () => {
+            displayView.style.display = 'block';
+            editView.style.display = 'none';
+            profileEditForm.reset(); 
+        });
+    }
+
+    if (profileEditForm) {
+        profileEditForm.addEventListener('submit', function(e) {
+            e.preventDefault(); 
+            const formData = new FormData(this);
+            const saveButton = document.getElementById('save-profile-btn');
+            const originalButtonText = saveButton.innerHTML;
+            saveButton.disabled = true;
+            saveButton.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Đang lưu...';
+
+            fetch("{% url 'users:ajax_update_profile' %}", {
+                method: 'POST',
+                body: formData,
+                headers: { 'X-Requested-With': 'XMLHttpRequest' }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    document.getElementById('display-fullname').textContent = data.first_name + ' ' + data.last_name;
+                    document.getElementById('display-email').textContent = data.email;
+                    document.getElementById('display-username').textContent = data.username;
+
+                    const headerUsername = document.querySelector('.header-username');
+                    if (headerUsername) headerUsername.textContent = data.first_name + ' ' + data.last_name;
+
+                    displayView.style.display = 'block';
+                    editView.style.display = 'none';
+                    showToast('Cập nhật thông tin thành công!', 'success');
+                } else {
+                    showToast('Lỗi: ' + data.message, 'error');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showToast('Đã có lỗi xảy ra. Vui lòng thử lại.', 'error');
+            })
+            .finally(() => {
+                saveButton.disabled = false;
+                saveButton.innerHTML = originalButtonText;
+            });
+        });
+    }
+
+
+    // ==========================================================
+    // THÊM MỚI: LOGIC XỬ LÝ XÓA TÀI KHOẢN
+    // ==========================================================
+    const deleteModal = document.getElementById('delete-account-modal');
+    const openModalBtn = document.getElementById('open-delete-modal-btn');
+    const closeModalBtn = deleteModal.querySelector('.modal-close-btn');
+    const cancelDeleteBtn = document.getElementById('cancel-delete-btn');
+    const confirmDeleteBtn = document.getElementById('confirm-delete-btn');
+    const deleteFormCsrf = document.querySelector('[name=csrfmiddlewaretoken]'); // Lấy token từ một form có sẵn
+
+    function openModal() {
+        if (deleteModal) deleteModal.classList.add('active');
+    }
+
+    function closeModal() {
+        if (deleteModal) deleteModal.classList.remove('active');
+    }
+
+    if (openModalBtn) {
+        openModalBtn.addEventListener('click', openModal);
+    }
+    if (closeModalBtn) {
+        closeModalBtn.addEventListener('click', closeModal);
+    }
+    if (cancelDeleteBtn) {
+        cancelDeleteBtn.addEventListener('click', closeModal);
+    }
+    if (deleteModal) {
+        deleteModal.addEventListener('click', (event) => {
+            if (event.target === deleteModal) {
+                closeModal();
+            }
+        });
+    }
+
+    // Gửi yêu cầu xóa tài khoản
+    if (confirmDeleteBtn) {
+        confirmDeleteBtn.addEventListener('click', () => {
+            // Không cần lấy dữ liệu từ form nữa
+            const formData = new FormData();
+            // Lấy CSRF token từ một form khác trên trang (ví dụ form avatar)
+            if (deleteFormCsrf) {
+                formData.append('csrfmiddlewaretoken', deleteFormCsrf.value);
+            }
+
+            confirmDeleteBtn.disabled = true;
+            confirmDeleteBtn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Đang xử lý...';
+
+            fetch("{% url 'users:ajax_delete_account' %}", {
+                method: 'POST',
+                body: formData,
+                headers: { 'X-Requested-With': 'XMLHttpRequest' }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    showToast(data.message, 'success');
+                    // Chờ 2 giây để người dùng thấy thông báo rồi mới chuyển hướng
+                    setTimeout(() => {
+                        window.location.href = data.redirect_url;
+                    }, 2000);
+                } else {
+                    showToast(data.message, 'error');
+                    confirmDeleteBtn.disabled = false;
+                    confirmDeleteBtn.textContent = 'Tôi hiểu, xóa tài khoản';
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showToast('Có lỗi xảy ra, vui lòng thử lại.', 'error');
+                confirmDeleteBtn.disabled = false;
+                confirmDeleteBtn.textContent = 'Tôi hiểu, xóa tài khoản';
+            });
+        });
+    }
+
+});
+</script>
+{% endblock %}

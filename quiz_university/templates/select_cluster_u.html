@@ -1,0 +1,108 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Chọn Nhóm Ngành - CareerPath{% endblock %}
+
+{% block content %}
+<link rel="stylesheet" href="{% static 'css/quiz_university.css' %}">
+
+<main class="cluster-selection-page section-padding">
+    <div class="container text-center">
+        <div class="header-final-image">
+            <h2 class="title-final-image">
+                Bắt Đầu Bài Đánh Giá Kỹ Năng
+            </h2>
+            <div class="divider-final-image"></div>
+            <div class="subtitle-note-wrapper">
+                <!-- Icon được thêm vào đây -->
+                <i class="fas fa-lightbulb note-icon"></i>
+                <p class="subtitle-note">
+                    Hãy chọn một nhóm ngành bạn quan tâm nhất. Kết quả đánh giá sẽ được cá nhân hóa dựa trên lựa chọn của bạn.
+                </p>
+            </div>
+        </div>
+        {% if error %}
+            <div class="alert alert-danger mt-4" role="alert">{{ error }}</div>
+        {% endif %}
+
+        <form method="POST" action="{% url 'quiz_university:select_cluster_u' %}" id="cluster-form">
+            {% csrf_token %}
+            <input type="hidden" name="selected_cluster_code" id="selected_cluster_code">
+            <input type="hidden" name="selected_cluster_name" id="selected_cluster_name">
+
+            <div class="row g-4 justify-content-center mt-4">
+                <!-- Social -->
+                <div class="col-lg-4 col-md-6 col-sm-6">
+                    <div class="cluster-card card-social" data-code="social" data-name="Xã hội - Nhân văn">
+                        <div class="icon-wrapper"><span class="cluster-icon">👥</span></div>
+                        <span class="cluster-name">Xã hội - Nhân văn</span>
+                        <span class="cluster-tagline">Thấu hiểu, Chia sẻ, Hướng dẫn</span>
+                        <span class="action-hint">Chọn nhóm này <i class="fas fa-arrow-right"></i></span>
+                    </div>
+                </div>
+                <!-- Business -->
+                <div class="col-lg-4 col-md-6 col-sm-6">
+                    <div class="cluster-card card-business" data-code="business" data-name="Quản lý – Kinh doanh">
+                        <div class="icon-wrapper"><span class="cluster-icon">💼</span></div>
+                        <span class="cluster-name">Quản lý – Kinh doanh</span>
+                        <span class="cluster-tagline">Chiến lược, Lãnh đạo, Tối ưu</span>
+                        <span class="action-hint">Chọn nhóm này <i class="fas fa-arrow-right"></i></span>
+                    </div>
+                </div>
+                <!-- Tech -->
+                <div class="col-lg-4 col-md-6 col-sm-6">
+                    <div class="cluster-card card-tech" data-code="tech" data-name="Công nghệ – Kỹ thuật">
+                        <div class="icon-wrapper"><span class="cluster-icon">💻</span></div>
+                        <span class="cluster-name">Công nghệ – Kỹ thuật</span>
+                        <span class="cluster-tagline">Logic, Sáng tạo, Xây dựng</span>
+                        <span class="action-hint">Chọn nhóm này <i class="fas fa-arrow-right"></i></span>
+                    </div>
+                </div>
+                <!-- Science -->
+                <div class="col-lg-4 col-md-6 col-sm-6">
+                    <div class="cluster-card card-science" data-code="science" data-name="Khoa học Tự nhiên">
+                        <div class="icon-wrapper"><span class="cluster-icon">🔬</span></div>
+                        <span class="cluster-name">Khoa học Tự nhiên</span>
+                        <span class="cluster-tagline">Nghiên cứu, Khám phá, Phân tích</span>
+                        <span class="action-hint">Chọn nhóm này <i class="fas fa-arrow-right"></i></span>
+                    </div>
+                </div>
+                <!-- Health -->
+                <div class="col-lg-4 col-md-6 col-sm-6">
+                    <div class="cluster-card card-health" data-code="health" data-name="Y tế – Sức khỏe">
+                        <div class="icon-wrapper"><span class="cluster-icon">🩺</span></div>
+                        <span class="cluster-name">Y tế – Sức khỏe</span>
+                        <span class="cluster-tagline">Chăm sóc, Tận tâm, Chính xác</span>
+                        <span class="action-hint">Chọn nhóm này <i class="fas fa-arrow-right"></i></span>
+                    </div>
+                </div>
+                <!-- Arts -->
+                <div class="col-lg-4 col-md-6 col-sm-6">
+                    <div class="cluster-card card-arts" data-code="arts" data-name="Sáng tạo – Nghệ thuật">
+                        <div class="icon-wrapper"><span class="cluster-icon">🎨</span></div>
+                        <span class="cluster-name">Sáng tạo – Nghệ thuật</span>
+                        <span class="cluster-tagline">Tinh tế, Tự do, Cảm xúc</span>
+                        <span class="action-hint">Chọn nhóm này <i class="fas fa-arrow-right"></i></span>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</main>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const clusterCards = document.querySelectorAll('.cluster-card');
+    const form = document.getElementById('cluster-form');
+    const codeInput = document.getElementById('selected_cluster_code');
+    const nameInput = document.getElementById('selected_cluster_name');
+
+    clusterCards.forEach(card => {
+        card.addEventListener('click', () => {
+            codeInput.value = card.dataset.code;
+            nameInput.value = card.dataset.name;
+            form.submit();
+        });
+    });
+});
+</script>
+{% endblock %}

@@ -1,0 +1,320 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Đánh Giá Kỹ Năng - CareerPath{% endblock %}
+
+{% block content %}
+<link rel="stylesheet" href="{% static 'css/quiz_university.css' %}">
+
+<main class="quiz-page section-padding">
+    <div class="container quiz-container">
+        <!-- Sidebar (Hướng dẫn và tiến trình) -->
+        <aside class="quiz-sidebar">
+            <div class="sidebar-card">
+                <h3 class="sidebar-title"><i class="fas fa-lightbulb"></i> Hướng Dẫn</h3>
+                <ul class="instructions-list">
+                    <li><i class="fas fa-clock"></i> Thời gian: 10 - 15 phút (~24 câu)</li>
+                    <li><i class="fas fa-mouse-pointer"></i> Chọn đáp án đúng nhất về bạn</li>
+                    <li><i class="fas fa-check-double"></i> Có thể chọn nhiều đáp án</li>
+                    <li><i class="fas fa-user-astronaut"></i> Trả lời theo kỹ năng, kinh nghiệm</li>
+                    <li><i class="fas fa-paper-plane"></i> Nhấn "Nộp bài" xem kết quả</li>
+                </ul>
+                <div class="progress-circle">
+                    <svg class="progress-ring" width="100" height="100">
+                        <circle class="progress-ring__circle" stroke="#e5e7eb" stroke-width="8" fill="transparent" r="44" cx="50" cy="50"/>
+                        <circle class="progress-ring__fill" stroke="url(#progressGradient)" stroke-width="8" fill="transparent" r="44" cx="50" cy="50" style="stroke-dasharray: 276.46; stroke-dashoffset: 276.46;"/>
+                    </svg>
+                    <span class="progress-text">0/10</span>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Khu vực chính (Câu hỏi và đáp án) -->
+        <section class="quiz-main">
+            <div class="quiz-card">
+                <h2 class="quiz-title">Đánh Giá Kỹ Năng Của Bạn</h2>
+                <div class="section-divider"></div>
+                <div id="question-area" class="question-area">
+                    <span class="question-number">Câu 1</span>
+                    <p class="question-text">Đang tải câu hỏi...</p>
+                </div>
+                <div id="answers-area" class="answers-grid"></div>
+                <div class="quiz-navigation">
+                    <button type="button" id="prev-question-btn" class="btn btn-outline" style="display: none;">
+                        <i class="fas fa-arrow-left"></i> Câu trước
+                    </button>
+                    <button type="button" id="next-question-btn" class="btn btn-primary">
+                        Câu tiếp theo <i class="fas fa-arrow-right"></i>
+                    </button>
+                    <button type="button" id="submit-quiz-btn" class="btn btn-submit" style="display: none;">
+                        <i class="fas fa-check-circle"></i> Nộp bài
+                    </button>
+                </div>
+            </div>
+        </section>
+    </div>
+</main>
+
+<!-- Gradient cho vòng tiến trình -->
+<svg width="0" height="0" style="position:absolute;">
+    <defs>
+        <linearGradient id="progressGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" style="stop-color:#facc15;stop-opacity:1" />
+            <stop offset="100%" style="stop-color:#28a745;stop-opacity:1" />
+        </linearGradient>
+    </defs>
+</svg>
+
+<!-- Container cho Toast Notifications -->
+<div id="toast-container"></div>
+
+<script>
+  // ==========================================================
+  // HÀM HIỂN THỊ THÔNG BÁO (TOAST)
+  // ==========================================================
+  function showToast(message, type = 'error', duration = 5000) {
+      const container = document.getElementById('toast-container');
+      if (!container) return;
+
+      const toast = document.createElement('div');
+      toast.className = `toast ${type}`;
+
+      const iconSvg = `<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                          <circle cx="12" cy="12" r="11" fill="#EF4444"/>
+                          <path d="M15 9l-6 6M9 9l6 6" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+                      </svg>`;
+
+      toast.innerHTML = `
+          <div class="toast-icon">${iconSvg}</div>
+          <div class="toast-message">${message}</div>
+          <button class="toast-close">×</button>
+          <div class="toast-progress"><div class="toast-progress-bar"></div></div>
+      `;
+      
+      container.appendChild(toast);
+      
+      const progressBar = toast.querySelector('.toast-progress-bar');
+      progressBar.style.animationDuration = `${duration / 1000}s`;
+      
+      let autoCloseTimer;
+      let timeRemaining = duration;
+      let startTime;
+
+      const hideToast = () => {
+          clearTimeout(autoCloseTimer);
+          toast.classList.remove('show');
+          toast.addEventListener('transitionend', () => {
+              if(toast.parentElement) toast.remove();
+          }, { once: true });
+      };
+
+      const pauseTimer = () => {
+          clearTimeout(autoCloseTimer);
+          timeRemaining -= (Date.now() - startTime);
+          progressBar.style.animationPlayState = 'paused';
+      };
+      
+      const resumeTimer = () => {
+          startTime = Date.now();
+          progressBar.style.animationPlayState = 'running';
+          autoCloseTimer = setTimeout(hideToast, timeRemaining);
+      };
+      
+      toast.addEventListener('mouseenter', pauseTimer);
+      toast.addEventListener('mouseleave', resumeTimer);
+      toast.querySelector('.toast-close').addEventListener('click', hideToast);
+      
+      setTimeout(() => {
+          toast.classList.add('show');
+          resumeTimer(); // Bắt đầu timer lần đầu
+      }, 100);
+  }
+
+  // ==========================================================
+  // CODE LOGIC QUIZ (ĐÃ CẬP NHẬT VÀ TỐI ƯU)
+  // ==========================================================
+  function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+      const cookies = document.cookie.split(';');
+      for (let cookie of cookies) {
+        cookie = cookie.trim();
+        if (cookie.substring(0, name.length + 1) === (name + '=')) {
+          cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+          break;
+        }
+      }
+    }
+    return cookieValue;
+  }
+
+  const csrftoken = getCookie('csrftoken');
+  const TOTAL_QUESTIONS = 24;
+  const RADIUS = 44;
+  const CIRCUMFERENCE = 2 * Math.PI * RADIUS;
+  let currentQuestion = 0;
+  const selectedAnswersPerQuestion = [];
+  const questionBank = [];
+
+  const progressFill = document.querySelector('.progress-ring__fill');
+  progressFill.style.strokeDasharray = `${CIRCUMFERENCE}`;
+  updateProgressCircle(currentQuestion-1); // Bắt đầu ở 0
+
+  function updateProgressCircle(currentIndex) {
+    // Nếu chưa bắt đầu, progress là 0
+    const progress = currentIndex < 0 ? 0 : currentIndex + 1;
+    const percentage = progress / TOTAL_QUESTIONS;
+    const offset = CIRCUMFERENCE * (1 - percentage);
+    progressFill.style.strokeDashoffset = offset;
+    document.querySelector('.progress-text').innerText = `${progress}/${TOTAL_QUESTIONS}`;
+  }
+
+  async function fetchQuestion(questionIndex) {
+    // Hiển thị trạng thái loading trong khi chờ
+    document.querySelector('.question-text').innerText = 'Đang tải câu hỏi...';
+    document.getElementById('answers-area').innerHTML = '<div class="spinner"></div>';
+
+    const res = await fetch('{% url "quiz_university:next_question_u" %}', {
+      method: 'POST',
+      headers: { 
+          'Content-Type': 'application/json',
+          'X-CSRFToken': csrftoken
+      },
+      body: JSON.stringify({
+        answers: selectedAnswersPerQuestion.slice(0, questionIndex),
+        question_index: questionIndex
+      })
+    });
+
+    const data = await res.json();
+    if (data.end) {
+      document.getElementById('submit-quiz-btn').click();
+      return;
+    }
+    // Lưu câu hỏi và đáp án vào ngân hàng câu hỏi
+    questionBank[questionIndex] = { question: data.question, options: data.options };
+    updateQuestionUI(data.question, data.options);
+  }
+
+  function attachAnswerListeners() {
+    document.querySelectorAll('.answer-option').forEach(button => {
+      button.addEventListener('click', () => {
+        const isSelected = button.dataset.selected === 'true';
+        button.dataset.selected = isSelected ? 'false' : 'true';
+        button.classList.toggle('selected');
+      });
+    });
+  }
+
+  function updateQuestionUI(questionText, options) {
+    document.querySelector('.question-number').innerText = `Câu ${currentQuestion + 1}`;
+    document.querySelector('.question-text').innerText = questionText;
+    updateProgressCircle(currentQuestion);
+    
+    const prevBtn = document.getElementById('prev-question-btn');
+    prevBtn.style.display = currentQuestion > 0 ? 'inline-block' : 'none';
+    
+    const answersArea = document.getElementById('answers-area');
+    answersArea.innerHTML = '';
+    options.forEach(opt => {
+      const btn = document.createElement('button');
+      btn.className = 'answer-option';
+      btn.setAttribute('data-selected', 'false');
+      btn.innerHTML = opt.text;
+      answersArea.appendChild(btn);
+    });
+    
+    // Khôi phục lại các đáp án đã chọn cho câu hỏi này (dựa trên index)
+    const previousSelections = selectedAnswersPerQuestion[currentQuestion] || [];
+    document.querySelectorAll('.answer-option').forEach((btn, idx) => {
+      if (previousSelections.includes(idx)) {
+        btn.dataset.selected = 'true';
+        btn.classList.add('selected');
+      }
+    });
+
+    attachAnswerListeners();
+    
+    const nextBtn = document.getElementById('next-question-btn');
+    const submitBtn = document.getElementById('submit-quiz-btn');
+    if (currentQuestion === TOTAL_QUESTIONS - 1) {
+      nextBtn.style.display = 'none';
+      submitBtn.style.display = 'inline-block';
+    } else {
+      nextBtn.style.display = 'inline-block';
+      submitBtn.style.display = 'none';
+    }
+  }
+
+  // [TỐI ƯU] Sự kiện cho nút "Câu tiếp theo"
+  document.getElementById('next-question-btn').addEventListener('click', async () => {
+    const selectedAnswers = [...document.querySelectorAll('.answer-option')]
+      .map((btn, idx) => btn.dataset.selected === "true" ? idx : -1)
+      .filter(idx => idx !== -1);
+
+    if (selectedAnswers.length === 0) {
+      showToast("Bạn cần chọn ít nhất một đáp án!");
+      return;
+    }
+
+    selectedAnswersPerQuestion[currentQuestion] = selectedAnswers;
+    currentQuestion++;
+
+    // [TỐI ƯU]: Kiểm tra xem câu hỏi tiếp theo đã có trong ngân hàng chưa
+    if (questionBank[currentQuestion]) {
+        // Nếu có, dùng luôn không cần fetch
+        const { question, options } = questionBank[currentQuestion];
+        updateQuestionUI(question, options);
+    } else {
+        // Nếu chưa, mới đi fetch
+        await fetchQuestion(currentQuestion);
+    }
+  });
+
+  // [SỬA LỖI & TỐI ƯU] Sự kiện cho nút "Câu trước"
+  document.getElementById('prev-question-btn').addEventListener('click', () => {
+    if (currentQuestion <= 0) return;
+
+    // [SỬA LỖI]: Lưu lại đáp án của câu hiện tại TRƯỚC KHI quay lại
+    const currentAnswers = [...document.querySelectorAll('.answer-option')]
+        .map((btn, idx) => btn.dataset.selected === "true" ? idx : -1)
+        .filter(idx => idx !== -1);
+    selectedAnswersPerQuestion[currentQuestion] = currentAnswers;
+    
+    currentQuestion--;
+
+    // [TỐI ƯU]: Lấy luôn câu hỏi từ ngân hàng đã lưu, không cần fetch lại
+    const { question, options } = questionBank[currentQuestion];
+    updateQuestionUI(question, options);
+  });
+
+  // Sự kiện nút nộp bài
+  document.getElementById('submit-quiz-btn').addEventListener('click', async () => {
+    const selectedAnswers = [...document.querySelectorAll('.answer-option')]
+      .map((btn, idx) => btn.dataset.selected === "true" ? idx : -1)
+      .filter(idx => idx !== -1);
+
+    if (selectedAnswers.length === 0) {
+      showToast("Bạn cần chọn ít nhất một đáp án trước khi nộp bài!");
+      return;
+    }
+
+    selectedAnswersPerQuestion[currentQuestion] = selectedAnswers;
+    
+    await fetch('{% url "quiz_university:submit_quiz_u" %}', {
+      method: 'POST',
+      headers: { 
+          'Content-Type': 'application/json',
+          'X-CSRFToken': csrftoken
+      },
+      body: JSON.stringify({ answers: selectedAnswersPerQuestion })
+    });
+
+    window.location.href = '{% url "quiz_university:ket_qua_u" %}';
+  });
+
+  // Tải câu hỏi đầu tiên
+  fetchQuestion(currentQuestion);
+  
+</script>
+{% endblock %}

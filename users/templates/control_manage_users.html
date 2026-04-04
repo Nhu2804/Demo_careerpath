@@ -1,0 +1,132 @@
+{# D:\SUM25\Careerpath\users\templates\control_manage_users.html #}
+{% extends "admin/base_site.html" %}
+{% load i18n static humanize %}
+
+{% block title %}Quản lý User{% endblock %}
+
+{% block extrastyle %}
+  {{ block.super }}
+  <style>
+    .cp-filter-card {
+      background: #fff;
+      border: 1px solid rgba(0,0,0,.06);
+      border-radius: .5rem;
+      box-shadow: 0 1px 2px rgba(16,24,40,.04);
+      padding: 1rem;
+      margin: 1rem 0 1.25rem;
+    }
+    .table thead th { white-space: nowrap; }
+    .badge { font-size: .85rem; }
+  </style>
+{% endblock %}
+
+{% block content %}
+  <h1 class="h3">Quản lý User</h1>
+
+  {# ============== FORM LỌC (GET) ============== #}
+  <div class="container-fluid cp-filter-card">
+    <form class="row g-2 align-items-end" method="get">
+      <div class="col-md-5">
+        <label class="form-label">Tìm username/email</label>
+        <input class="form-control" name="q" placeholder="Tìm username/email" value="{{ q }}">
+      </div>
+
+      <div class="col-md-3">
+        <label class="form-label">Premium</label>
+        <select class="form-select" name="premium">
+          <option value="">-- Premium --</option>
+          <option value="1" {% if premium == '1' %}selected{% endif %}>Có</option>
+          <option value="0" {% if premium == '0' %}selected{% endif %}>Không</option>
+        </select>
+      </div>
+
+      <div class="col-md-3">
+        <label class="form-label">Hoạt động</label>
+        <select class="form-select" name="active">
+          <option value="">-- Hoạt động --</option>
+          <option value="1" {% if active == '1' %}selected{% endif %}>Active</option>
+          <option value="0" {% if active == '0' %}selected{% endif %}>Inactive</option>
+        </select>
+      </div>
+
+      <div class="col-md-1 d-grid">
+        <button class="btn btn-primary">Lọc</button>
+      </div>
+    </form>
+  </div>
+
+  {# ============== BẢNG USER + NÚT PREMIUM ============== #}
+  <div class="table-responsive">
+    <table class="table table-striped align-middle">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Username</th>
+          <th>Email</th>
+          <th>Premium</th>
+          <th>Hạn Premium</th>
+          <th>Active</th>
+          <th>Ngày tham gia</th>
+          <th style="width:320px">Thao tác</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for u in users_list %}
+          <tr>
+            <td>{{ forloop.counter }}</td>
+            <td>{{ u.username }}</td>
+            <td>{{ u.email }}</td>
+            <td>
+              {% if u.is_premium %}
+                <span class="badge bg-success">Premium</span>
+              {% else %}
+                <span class="badge bg-secondary">Free</span>
+              {% endif %}
+            </td>
+            <td>
+              {% if u.premium_expiry %}
+                {{ u.premium_expiry|date:"d/m/Y H:i" }}
+                <small class="text-muted">({{ u.premium_expiry|naturaltime }})</small>
+              {% else %}
+                —
+              {% endif %}
+            </td>
+            <td>
+              {% if u.is_active %}
+                <span class="badge bg-primary">Active</span>
+              {% else %}
+                <span class="badge bg-warning text-dark">Inactive</span>
+              {% endif %}
+            </td>
+            <td>{{ u.date_joined|date:"d/m/Y H:i" }}</td>
+            <td>
+              {# Toggle Active #}
+              <form method="post" action="{% url 'users:toggle_active' u.id %}" style="display:inline">
+                {% csrf_token %}
+                <button class="btn btn-sm {% if u.is_active %}btn-outline-warning{% else %}btn-outline-success{% endif %}" type="submit">
+                  {% if u.is_active %}Khoá{% else %}Mở{% endif %}
+                </button>
+              </form>
+
+              {# Cấp Premium: chọn số ngày #}
+              {% if not u.is_premium %}
+                <form method="post" action="{% url 'users:set_premium' u.id %}" style="display:inline; margin-left:.5rem">
+                  {% csrf_token %}
+                  <input type="number" name="days" value="30" min="1" class="form-control d-inline-block" style="width:90px" />
+                  <button class="btn btn-sm btn-primary" type="submit">Cấp Premium</button>
+                </form>
+              {% else %}
+                <form method="post" action="{% url 'users:remove_premium' u.id %}" style="display:inline; margin-left:.5rem">
+                  {% csrf_token %}
+                  <button class="btn btn-sm btn-outline-danger" type="submit">Gỡ Premium</button>
+                </form>
+              {% endif %}
+            </td>
+          </tr>
+        {% empty %}
+          <tr><td colspan="8" class="text-center text-muted">Không có người dùng phù hợp.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+{% endblock %}

@@ -1,0 +1,464 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Kết Quả Trắc Nghiệm - CareerPath{% endblock %}
+
+{% block content %}
+<link rel="stylesheet" href="{% static 'css/quiz_highschool.css' %}">
+
+<main class="result-page section-padding">
+
+  <!-- KHUNG TRẮNG SỐ 1: KẾT QUẢ -->
+  <div class="container result-container">
+    <h2 class="result-heading">🎯 Báo Cáo Kết Quả Trắc Nghiệm Chọn Ngành</h2>
+    <div class="section-divider"></div>
+
+    <div class="tabs">
+      <button class="tab active" onclick="showTab('overview')" aria-label="Xem tổng quan kết quả">✅ Tổng Quan</button>
+      <button class="tab" onclick="showTab('analysis')" aria-label="Xem phân tích chi tiết">📊 Phân Tích</button>
+    </div>
+
+    <div class="tab-content-wrapper">
+      <!-- Nội dung các tab kết quả... -->
+      <div id="overview" class="tab-content active">
+        <div class="result-wrapper">
+          <div class="result-bars">
+            {% for cluster, percentage in cluster_percentages.items %}
+            <div class="result-bar">
+              <div class="label">• Nhóm {{ cluster }}: <span class="percentage">{{ percentage }}%</span></div>
+              <div class="bar"><div class="fill" style="width:{{ percentage }}%;" data-percentage="{{ percentage }}"></div></div>
+            </div>
+            {% endfor %}
+          </div>
+          <div class="profile-spotlight-wrapper">
+              {{ top_card_html|safe }}
+              {{ second_card_html|safe }}
+          </div>
+        </div>
+      </div>
+      <div id="analysis" class="tab-content">
+        <!-- Nội dung tab phân tích... -->
+        <div class="analysis-polished-layout">
+          <div class="vertical-nav-polished">
+            <div class="nav-header-polished">
+              <i class="fas fa-flag-checkered"></i>
+              <h6>Lộ Trình Của Bạn</h6>
+            </div>
+            <button class="v-nav-item-polished active" onclick="switchVerticalTab(event, 'v-group1')">
+              <i class="fas fa-briefcase nav-icon-main"></i>
+              <div class="v-nav-text">
+                <span class="v-nav-rank">Lựa chọn #1</span>
+                <span class="v-nav-name">{{ top_cluster_name }}</span>
+              </div>
+            </button>
+            <button class="v-nav-item-polished" onclick="switchVerticalTab(event, 'v-group2')">
+              <i class="fas fa-microchip nav-icon-main"></i>
+              <div class="v-nav-text">
+                <span class="v-nav-rank">Lựa chọn #2</span>
+                <span class="v-nav-name">{{ second_cluster_name }}</span>
+              </div>
+            </button>
+          </div>
+          <div class="vertical-content-area-polished {% if not is_premium %}locked-pane{% endif %}">
+            <div id="v-group1" class="v-content-pane active">
+              <div class="pane-header-polished group-1-theme">
+                {{ top_analysis_html|safe }}
+              </div>
+            </div>
+            <div id="v-group2" class="v-content-pane">
+              <div class="pane-header-polished group-2-theme">
+                {{ second_analysis_html|safe }}
+              </div>
+            </div>
+            {% if not is_premium %}
+            <div class="premium-overlay premium-overlay--content">
+              <div class="premium-overlay-content">
+                <i class="fas fa-crown"></i>
+                <p>Hãy sử dụng Premium để xem</p>
+                <a class="btn-premium" href="{% url 'premium:renew_premium' %}">Nâng cấp ngay</a>
+              </div>
+            </div>
+          {% endif %}
+          </div>        
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- KHUNG TRẮNG SỐ 2: ĐÁNH GIÁ (GIAO DIỆN V4 - COMPACT FORM) -->
+  <div class="container" id="final-evaluation">
+      <!-- Wrapper mới cho form nhỏ gọn -->
+      <div class="feedback-compact-form-v4"
+          data-quiz-type="{{ quiz_type|default:'highschool' }}"
+          data-quiz-id="{{ quiz_id|default:'' }}">
+
+          <!-- Hàng 1: Các ngôi sao -->
+          <div class="stars" role="radiogroup" aria-label="Đánh giá 1 đến 5 sao">
+              <button type="button" class="star" aria-checked="false" aria-label="1 sao" data-rating="1">★</button>
+              <button type="button" class="star" aria-checked="false" aria-label="2 sao" data-rating="2">★</button>
+              <button type="button" class="star" aria-checked="false" aria-label="3 sao" data-rating="3">★</button>
+              <button type="button" class="star" aria-checked="false" aria-label="4 sao" data-rating="4">★</button>
+              <button type="button" class="star" aria-checked="false" aria-label="5 sao" data-rating="5">★</button>
+              <span class="rating-text">Bạn thấy hữu ích chứ?</span>
+          </div>
+
+          <!-- Hàng 2: Ô comment và nút gửi -->
+          <div class="comment-action-wrapper-v4">
+              <div class="input-wrapper-v4">
+                  <i class="fas fa-pen input-icon-v4"></i>
+                  <!-- Input giờ có placeholder là một khoảng trắng -->
+                  <input type="text" id="fb-comment" maxlength="500" placeholder=" " aria-label="Nội dung đánh giá">
+                  <!-- Label mới được thêm vào để tạo hiệu ứng -->
+                  <label for="fb-comment" class="floating-label">Chia sẻ trải nghiệm của bạn...</label>
+              </div>
+              <button id="fb-submit" class="btn-submit-v4" disabled>
+                  <span class="loading" hidden></span>
+                  <span>Gửi</span>
+              </button>
+          </div>
+          
+          <span id="fb-status" class="muted" role="status" aria-live="polite"></span>
+      </div>
+  </div>
+
+</main> 
+<div id="toast-container"></div>
+
+<script>
+  function showTab(tabId) {
+    const tabs = document.querySelectorAll(".tab");
+    const contents = document.querySelectorAll(".tab-content");
+    tabs.forEach(btn => btn.classList.remove("active"));
+    contents.forEach(c => {
+      c.classList.remove("active");
+      c.style.opacity = "0";
+    });
+    const selectedTab = document.querySelector(`.tab[onclick="showTab('${tabId}')"]`);
+    const selectedContent = document.getElementById(tabId);
+    selectedTab.classList.add("active");
+    selectedContent.classList.add("active");
+    setTimeout(() => {
+      selectedContent.style.opacity = "1";
+    }, 50);
+  }
+
+  document.addEventListener("DOMContentLoaded", () => {
+    document.querySelectorAll(".fill").forEach(bar => {
+      const percentage = bar.dataset.percentage;
+      bar.style.width = "0%";
+      setTimeout(() => {
+        bar.style.width = `${percentage}%`;
+      }, 300);
+    });
+  });
+
+  function switchVerticalTab(event, paneId) {
+    document.querySelectorAll('.v-content-pane').forEach(pane => {
+      pane.classList.remove('active');
+    });
+    document.querySelectorAll('.v-nav-item-polished').forEach(btn => {
+      btn.classList.remove('active');
+    });
+    const activePane = document.getElementById(paneId);
+    activePane.classList.add('active');
+    event.currentTarget.classList.add('active');
+    animateProgressCircle(activePane);
+  }
+
+  function animateProgressCircle(pane) {
+    const wrapper = pane.querySelector('.progress-circle-wrapper');
+    if (!wrapper) return;
+    const score = parseInt(wrapper.dataset.score, 10);
+    const indicator = wrapper.querySelector('.progress-ring-indicator');
+    const radius = indicator.r.baseVal.value;
+    const circumference = 2 * Math.PI * radius;
+    const offset = circumference - (score / 100) * circumference;
+    indicator.style.strokeDasharray = `${circumference} ${circumference}`;
+    indicator.style.strokeDashoffset = circumference;
+    setTimeout(() => {
+      indicator.style.strokeDashoffset = offset;
+    }, 10);
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    const initialActivePane = document.querySelector('.v-content-pane.active');
+    if (initialActivePane) {
+      animateProgressCircle(initialActivePane);
+    }
+  });
+
+  function switchSpotlightCard(cardIdToShow) {
+    const allCards = document.querySelectorAll('.profile-spotlight-card');
+    allCards.forEach(card => {
+      card.classList.remove('active');
+    });
+    const cardToShow = document.getElementById(cardIdToShow);
+    if (cardToShow) {
+      cardToShow.classList.add('active');
+    }
+  }
+  function restructurePaneContent(paneElement) {
+    // 1. Tìm thẻ cha chứa header có màu nền
+    const headerContainer = paneElement.querySelector('.pane-header-polished');
+    if (!headerContainer) return; // Nếu không có thì thoát
+
+    // 2. Tìm các phần content đang nằm sai vị trí (bên trong header)
+    const contentList = headerContainer.querySelector('.analysis-step-list');
+    const conclusion = headerContainer.querySelector('.analysis-conclusion');
+
+    // 3. Di chuyển các phần content này ra ngoài, làm con của thẻ v-content-pane
+    // JS sẽ tự động di chuyển phần tử từ vị trí cũ sang vị trí mới
+    if (contentList && !contentList.parentElement.classList.contains('v-content-pane')) {
+      paneElement.appendChild(contentList);
+    }
+    if (conclusion && !conclusion.parentElement.classList.contains('v-content-pane')) {
+      paneElement.appendChild(conclusion);
+    }
+  }
+
+  // --- CÁC HÀM CŨ ĐƯỢC CẬP NHẬT ---
+
+  function showTab(tabId) {
+    const tabs = document.querySelectorAll(".tab");
+    const contents = document.querySelectorAll(".tab-content");
+    tabs.forEach(btn => btn.classList.remove("active"));
+    contents.forEach(c => {
+      c.classList.remove("active");
+      c.style.opacity = "0";
+    });
+    const selectedTab = document.querySelector(`.tab[onclick="showTab('${tabId}')"]`);
+    const selectedContent = document.getElementById(tabId);
+    selectedTab.classList.add("active");
+    selectedContent.classList.add("active");
+    setTimeout(() => {
+      selectedContent.style.opacity = "1";
+    }, 50);
+  }
+
+  function switchVerticalTab(event, paneId) {
+    document.querySelectorAll('.v-content-pane').forEach(pane => {
+      pane.classList.remove('active');
+    });
+    document.querySelectorAll('.v-nav-item-polished').forEach(btn => {
+      btn.classList.remove('active');
+    });
+    const activePane = document.getElementById(paneId);
+    activePane.classList.add('active');
+    event.currentTarget.classList.add('active');
+    
+    // CẬP NHẬT: Gọi hàm tái cấu trúc cho tab vừa được click
+    restructurePaneContent(activePane); 
+
+    animateProgressCircle(activePane);
+  }
+
+  function animateProgressCircle(pane) {
+    const wrapper = pane.querySelector('.progress-circle-wrapper');
+    if (!wrapper) return;
+    const scoreText = wrapper.dataset.score || "0";
+    const score = parseInt(scoreText.replace('%',''), 10);
+    const indicator = wrapper.querySelector('.progress-ring-indicator');
+    if (!indicator) return;
+    const radius = indicator.r.baseVal.value;
+    const circumference = 2 * Math.PI * radius;
+    const offset = circumference - (score / 100) * circumference;
+    indicator.style.strokeDasharray = `${circumference} ${circumference}`;
+    indicator.style.strokeDashoffset = circumference;
+    setTimeout(() => {
+      indicator.style.strokeDashoffset = offset;
+    }, 10);
+  }
+
+  function switchSpotlightCard(cardIdToShow) {
+    const allCards = document.querySelectorAll('.profile-spotlight-card');
+    allCards.forEach(card => {
+      card.classList.remove('active');
+    });
+    const cardToShow = document.getElementById(cardIdToShow);
+    if (cardToShow) {
+      cardToShow.classList.add('active');
+    }
+  }
+
+  // --- HÀM CHẠY KHI TẢI TRANG ---
+  document.addEventListener("DOMContentLoaded", () => {
+    // Chạy animation cho thanh tiến trình ngang
+    document.querySelectorAll(".fill").forEach(bar => {
+      const percentage = bar.dataset.percentage;
+      bar.style.width = "0%";
+      setTimeout(() => {
+        bar.style.width = `${percentage}%`;
+      }, 300);
+    });
+
+    // CẬP NHẬT: Tìm tab đang active lúc tải trang và tái cấu trúc nó
+    const initialActivePane = document.querySelector('.v-content-pane.active');
+    if (initialActivePane) {
+      restructurePaneContent(initialActivePane); // Tái cấu trúc cho tab đầu tiên
+      animateProgressCircle(initialActivePane);   // Chạy animation vòng tròn
+    }
+  });
+
+
+// =======================================================
+// === SCRIPT MỚI: TOAST NOTIFICATION & ĐÁNH GIÁ ===
+// =======================================================
+
+/**
+ * Hiển thị một thông báo Toast
+ * @param {string} message - Nội dung thông báo
+ * @param {string} type - Loại thông báo ('success' hoặc 'error')
+ * @param {number} duration - Thời gian hiển thị (ms)
+ */
+function showToast(message, type = 'success', duration = 5000) {
+    const container = document.getElementById('toast-container');
+    if (!container) return;
+
+    const toast = document.createElement('div');
+    toast.className = `toast ${type}`;
+
+    const icons = {
+        success: '<i class="fas fa-check-circle"></i>',
+        error: '<i class="fas fa-times-circle"></i>'
+    };
+    
+    const titles = {
+        success: 'Thành công!',
+        error: 'Có lỗi xảy ra!'
+    }
+
+    toast.innerHTML = `
+        <div class="toast-icon">${icons[type]}</div>
+        <div class="toast-content">
+            <div class="title">${titles[type]}</div>
+            <div class="message">${message}</div>
+        </div>
+        <button class="toast-close">&times;</button>
+        <div class="toast-progress-bar"></div>
+    `;
+
+    container.appendChild(toast);
+
+    // Kích hoạt animation
+    setTimeout(() => {
+        toast.classList.add('show');
+    }, 100);
+
+    // Tự động đóng
+    const timeoutId = setTimeout(() => {
+        toast.classList.remove('show');
+        setTimeout(() => toast.remove(), 500); // Xóa khỏi DOM sau khi animation kết thúc
+    }, duration);
+
+    // Đóng khi click nút close
+    toast.querySelector('.toast-close').addEventListener('click', () => {
+        clearTimeout(timeoutId); // Hủy tự động đóng
+        toast.classList.remove('show');
+        setTimeout(() => toast.remove(), 500);
+    });
+}
+
+
+// Logic xử lý form đánh giá (PHIÊN BẢN SỬA LỖI CHO GIAO DIỆN V4)
+(function() {
+    // Thay đổi selector để trỏ đúng vào wrapper của form V4
+    const wrap = document.querySelector('.feedback-compact-form-v4');
+    if (!wrap) return;
+
+    // Lấy các thuộc tính data từ wrapper
+    const quizType = wrap.dataset.quizType || "{{ quiz_type|default:'highschool' }}";
+    const quizId = wrap.dataset.quizId || "{{ quiz_id|default:'' }}";
+
+    // Tìm các phần tử con bên trong wrapper
+    const stars = wrap.querySelectorAll('.star');
+    const submitBtn = wrap.querySelector('#fb-submit');
+    const commentEl = wrap.querySelector('#fb-comment');
+    const spinner = submitBtn.querySelector('.loading');
+    const statusEl = wrap.querySelector('#fb-status');
+
+    let rating = 0;
+
+    // Hàm này không cần thay đổi
+    function updateButtonState() {
+        submitBtn.disabled = !(rating >= 1 && rating <= 5);
+    }
+
+    // Hàm xử lý click sao
+    stars.forEach((btn, i) => {
+        btn.addEventListener('click', () => {
+            // Lấy rating từ data-attribute hoặc chỉ số
+            rating = parseInt(btn.dataset.rating, 10) || (i + 1);
+            
+            // Cập nhật giao diện sao
+            stars.forEach((b, j) => {
+                const currentRating = parseInt(b.dataset.rating, 10) || (j + 1);
+                const active = currentRating <= rating;
+                b.classList.toggle('active', active);
+                b.setAttribute('aria-checked', active ? 'true' : 'false');
+            });
+            
+            updateButtonState();
+        });
+    });
+
+    // Hàm xử lý click nút gửi
+    submitBtn.addEventListener('click', async () => {
+        if (!quizType || !quizId) {
+            showToast('Thiếu thông tin bài trắc nghiệm để đánh giá.', 'error');
+            return;
+        }
+
+        const comment = (commentEl.value || "").trim();
+        submitBtn.disabled = true;
+        spinner.hidden = false;
+        if (statusEl) statusEl.textContent = ''; // Xóa trạng thái cũ
+
+        try {
+            const res = await fetch("{% url 'quiz_highschool:save_feedback' %}", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-CSRFToken": "{{ csrf_token }}"
+                },
+                body: JSON.stringify({
+                    quiz_type: quizType,
+                    quiz_id: Number(quizId),
+                    rating,
+                    comment
+                })
+            });
+            const data = await res.json();
+            
+            if (res.ok && data.ok) {
+                showToast('Cảm ơn bạn đã gửi đánh giá!', 'success');
+                
+                // Reset form
+                commentEl.value = "";
+                rating = 0;
+                stars.forEach(b => {
+                    b.classList.remove('active');
+                    b.setAttribute('aria-checked', 'false');
+                });
+                updateButtonState(); // Vô hiệu hóa lại nút gửi
+            } else {
+                showToast(data.message || 'Gửi đánh giá thất bại. Vui lòng thử lại.', 'error');
+            }
+        } catch (err) {
+            console.error('Feedback submission error:', err); // Thêm log lỗi để debug
+            showToast('Lỗi kết nối mạng. Vui lòng kiểm tra và thử lại.', 'error');
+        } finally {
+            spinner.hidden = true;
+            // Kích hoạt lại nút nếu GỬI THẤT BẠI VÀ ĐÃ CÓ RATING
+            // Nếu gửi thành công, nút sẽ bị vô hiệu hóa bởi updateButtonState()
+            if (rating > 0 && !res.ok) {
+                 submitBtn.disabled = false;
+            }
+        }
+    });
+
+    // Gọi lần đầu để đảm bảo nút bị vô hiệu hóa
+    updateButtonState();
+})();
+
+</script>
+{% endblock %}

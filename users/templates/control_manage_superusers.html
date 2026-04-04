@@ -1,0 +1,174 @@
+{% extends "admin/change_list.html" %}
+{% load i18n static %}
+
+{# Ẩn hoàn toàn tiêu đề trang mặc định của admin #}
+{% block content_title %}{% endblock %}
+
+{% block extrastyle %}
+  {{ block.super }}
+  <style>
+    /*
+      ================================================================
+      🎨 GIAO DIỆN NÂNG CẤP - ĐỒNG BỘ HOÀN TOÀN VỚI THEME CAREERPATH
+      ================================================================
+    */
+
+    /* Card chính: Giữ cấu trúc nhưng dùng biến màu của CareerPath */
+    .su-management-card {
+      background-color: var(--card-bg, #fff);
+      border: 1px solid var(--content-border, #e9ecef);
+      border-radius: 0.75rem; /* Bo góc mềm mại hơn */
+      box-shadow: var(--card-shadow, 0 1px 2px rgba(0,0,0,.05));
+      overflow: hidden;
+      position: relative;
+    }
+
+    /* Dải màu trang trí: ĐỔI sang màu XANH LÁ thương hiệu */
+    .su-management-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 5px;
+      background-color: var(--careerpath-green, #28a745); /* <-- THAY ĐỔI CHÍNH */
+    }
+
+    /* Header bên trong Card */
+    .su-header {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      padding: 1.5rem 1.75rem 1rem;
+    }
+    .su-header .icon-wrapper { /* Tạo wrapper cho icon để dễ căn chỉnh */
+      font-size: 1.8rem;
+      color: var(--careerpath-green, #28a745); /* <-- THAY ĐỔI CHÍNH */
+    }
+    .su-header h3 {
+      font-size: 1.6rem; /* Tăng kích thước cho nổi bật */
+      font-weight: 600;
+      color: var(--content-text, #343a40);
+      margin: 0;
+    }
+
+    /* Form */
+    .promotion-form .form-label {
+        font-weight: 500;
+        color: var(--content-text, #343a40);
+        opacity: 0.9;
+    }
+
+    /* Nút bấm: Bỏ gradient, dùng màu xanh lá đặc */
+    .btn-promote { /* Đổi tên class cho rõ nghĩa */
+      background-color: var(--careerpath-green, #28a745) !important;
+      border-color: var(--careerpath-green, #28a745) !important;
+      color: #fff !important;
+      font-weight: 600;
+      padding: 0.6rem 1rem;
+      transition: all 0.2s ease;
+    }
+    .btn-promote:hover {
+        background-color: var(--careerpath-green-darker, #1e7e34) !important;
+        border-color: var(--careerpath-green-darker, #1e7e34) !important;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 10px rgba(40, 167, 69, 0.3);
+    }
+
+    /* Khối hướng dẫn hạ quyền: ĐỔI sang màu VÀNG thương hiệu */
+    .demotion-guide {
+        border-left: 4px solid var(--careerpath-yellow, #ffc107); /* <-- THAY ĐỔI CHÍNH */
+        background-color: #fffbeb; /* Nền vàng nhạt */
+        padding: 1rem 1.25rem;
+        border-radius: 0.5rem;
+        color: #664d03; /* Chữ màu tối trên nền vàng */
+    }
+    .demotion-guide p {
+        margin: 0;
+        font-size: 0.9rem;
+    }
+    .demotion-guide strong {
+        color: #523e02;
+    }
+
+    /* Đảm bảo dropdown của Jazzmin/Select2 trông đẹp */
+    .select2-container--default .select2-selection--single {
+        height: calc(2.875rem + 2px) !important;
+    }
+
+    
+  </style>
+{% endblock %}
+
+{% block content %}
+  <div class="card mb-4 su-management-card">
+    <div class="su-header">
+      <div class="icon-wrapper">
+        {# ĐỔI sang icon Font Awesome #}
+        <i class="fas fa-user-shield"></i>
+      </div>
+      <h3>Phân quyền Admin</h3>
+    </div>
+
+    <div class="card-body p-4 pt-2">
+      <form method="post" class="row g-3 align-items-end promotion-form">
+        {% csrf_token %}
+        <div class="col-lg-8">
+          <label for="{{ form.user.id_for_label }}" class="form-label"></label>
+          {{ form.user }}
+          {% if form.user.field.queryset.count == 0 %}
+            <div class="alert alert-info mt-2 py-2 px-3">
+                {# ĐỔI sang icon Font Awesome #}
+                <i class="fas fa-check-circle me-2"></i>
+                Tất cả người dùng hợp lệ đã là Admin.
+            </div>
+          {% endif %}
+        </div>
+
+        <div class="col-lg-4">
+          {# Tinh gọn, chỉ giữ lại nút hành động chính #}
+          <button type="submit" name="promote_user" value="1" class="btn btn-promote w-100 fs-6">
+            {# ĐỔI sang icon Font Awesome #}
+            <i class="fas fa-gem me-2"></i> Nâng cấp
+          </button>
+        </div>
+      </form>
+
+      <hr class="my-4">
+
+      <div class="demotion-guide">
+          <p>
+            {# ĐỔI sang icon Font Awesome và làm rõ nội dung #}
+            <i class="fas fa-info-circle me-2"></i>
+            Để <strong>Hạ cấp</strong>, hãy chọn các tài khoản trong bảng bên dưới và bấm "Đi đến".
+          </p>
+      </div>
+    </div>
+  </div>
+
+  {# Vẫn render bảng change_list mặc định của Admin #}
+  {{ block.super }} 
+{% endblock %}
+
+{% block extrajs %}
+  {{ block.super }}
+  {# Bỏ link Bootstrap Icons vì không còn dùng nữa #}
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      // Giữ lại script hữu ích này
+      const actionSelect = document.querySelector('select[name="action"]');
+      if (actionSelect) {
+        actionSelect.value = 'demote_to_regular';
+      }
+
+      // Jazzmin đã xử lý tốt select, nhưng chúng ta có thể tùy chỉnh thêm nếu cần.
+      // VD: Thêm placeholder cho Select2
+      const userSelect = document.querySelector('#id_user');
+      if (userSelect && window.jQuery && window.jQuery.fn.select2) {
+          $(userSelect).select2({
+              placeholder: "Chọn người dùng",
+              allowClear: true
+          });
+      }
+    });
+  </script>
+{% endblock %}
