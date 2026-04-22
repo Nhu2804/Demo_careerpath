@@ -120,21 +120,21 @@ LOGGING = {
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.mysql',
-#         'NAME': os.getenv('MYSQL_DATABASE'),
-#         'USER': os.getenv('MYSQL_USER'),
-#         'PASSWORD': os.getenv('MYSQL_PASSWORD'),
-#         'HOST': os.getenv('MYSQL_HOST','localhost'),
-#         'PORT': os.getenv('MYSQL_PORT','3306'),
-#         'OPTIONS': {
-#             'charset': 'utf8mb4',
-#             # Asia/Ho_Chi_Minh = +07:00
-#             "init_command": "SET time_zone = '+07:00'",
-#         },       
-#     }
-# }
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': os.getenv('MYSQL_DATABASE'),
+        'USER': os.getenv('MYSQL_USER'),
+        'PASSWORD': os.getenv('MYSQL_PASSWORD'),
+        'HOST': os.getenv('MYSQL_HOST','localhost'),
+        'PORT': os.getenv('MYSQL_PORT','3306'),
+        'OPTIONS': {
+            'charset': 'utf8mb4',
+            # Asia/Ho_Chi_Minh = +07:00
+            "init_command": "SET time_zone = '+07:00'",
+        },       
+    }
+}
 
 DATABASES = {
     'default': {
