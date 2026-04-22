@@ -28,7 +28,7 @@ SECRET_KEY = os.getenv('DJANGO_SECRET_KEY', 'dev-secret-key-123')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['careerpath.io.vn', 'www.careerpath.io.vn', '103.173.66.148', 'www.google.com', '127.0.0.1', 'localhost']
+ALLOWED_HOSTS = ['careerpath.io.vn', 'www.careerpath.io.vn', '103.173.66.148', 'www.google.com', '127.0.0.1', 'localhost', 'demo-careerpath.onrender.com',]
 CSRF_TRUSTED_ORIGINS = ['https://careerpath.io.vn', 'https://www.careerpath.io.vn']
 
 
