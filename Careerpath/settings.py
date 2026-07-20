@@ -31,6 +31,10 @@ DEBUG = os.getenv("DEBUG", "False") == "True"
 ALLOWED_HOSTS = ['careerpath.io.vn', 'www.careerpath.io.vn', '103.173.66.148', 'www.google.com', '127.0.0.1', 'localhost', 'demo-careerpath.onrender.com',]
 CSRF_TRUSTED_ORIGINS = ['https://careerpath.io.vn', 'https://www.careerpath.io.vn']
 
+# --- QUAN TRỌNG: Cấu hình HTTPS cho Render ---
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+SOCIAL_AUTH_REDIRECT_IS_HTTPS = True
+# --------------------------------------------
 
 # Application definition
 
@@ -228,8 +232,10 @@ EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
-EMAIL_HOST_USER = 'uyenntse170340@fpt.edu.vn'  
-EMAIL_HOST_PASSWORD = 'cood qsfk rlam qfdi'  
+
+# Lấy thông tin từ Environment Variable của Render
+EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER')
+EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 
 # Internationalization
