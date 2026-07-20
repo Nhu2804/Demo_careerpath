@@ -26,8 +26,8 @@ load_dotenv(BASE_DIR / ".env")
 SECRET_KEY = os.getenv('DJANGO_SECRET_KEY', 'dev-secret-key-123')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
-
+# DEBUG = True
+DEBUG = os.getenv("DEBUG", "False") == "True"
 ALLOWED_HOSTS = ['careerpath.io.vn', 'www.careerpath.io.vn', '103.173.66.148', 'www.google.com', '127.0.0.1', 'localhost', 'demo-careerpath.onrender.com',]
 CSRF_TRUSTED_ORIGINS = ['https://careerpath.io.vn', 'https://www.careerpath.io.vn']
 
@@ -120,21 +120,21 @@ LOGGING = {
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.mysql',
-        'NAME': os.getenv('MYSQL_DATABASE'),
-        'USER': os.getenv('MYSQL_USER'),
-        'PASSWORD': os.getenv('MYSQL_PASSWORD'),
-        'HOST': os.getenv('MYSQL_HOST','localhost'),
-        'PORT': os.getenv('MYSQL_PORT','3306'),
-        'OPTIONS': {
-            'charset': 'utf8mb4',
-            # Asia/Ho_Chi_Minh = +07:00
-            "init_command": "SET time_zone = '+07:00'",
-        },       
-    }
-}
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.mysql',
+#         'NAME': os.getenv('MYSQL_DATABASE'),
+#         'USER': os.getenv('MYSQL_USER'),
+#         'PASSWORD': os.getenv('MYSQL_PASSWORD'),
+#         'HOST': os.getenv('MYSQL_HOST','localhost'),
+#         'PORT': os.getenv('MYSQL_PORT','3306'),
+#         'OPTIONS': {
+#             'charset': 'utf8mb4',
+#             # Asia/Ho_Chi_Minh = +07:00
+#             "init_command": "SET time_zone = '+07:00'",
+#         },       
+#     }
+# }
 
 DATABASES = {
     'default': {
@@ -234,7 +234,9 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
 
 STATIC_URL = 'static/'
-STATIC_ROOT = Path('/var/www/careerpath/static_files')
+STATIC_ROOT = BASE_DIR / "staticfiles"
+
+# STATIC_ROOT = Path('/var/www/careerpath/static_files')
 
 STATICFILES_DIRS = [
     BASE_DIR / "static",
@@ -247,7 +249,8 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 
 MEDIA_URL = '/media/'
-MEDIA_ROOT = Path('/var/www/careerpath/media')
+MEDIA_ROOT = BASE_DIR / "media"
+# MEDIA_ROOT = Path('/var/www/careerpath/media')
 
 LOGIN_REDIRECT_URL = '/'          # sau đăng nhập google chuyển về trang chủ
 LOGOUT_REDIRECT_URL = '/'         # sau đăng xuất chuyển về trang chủ
