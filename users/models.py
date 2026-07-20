@@ -44,6 +44,14 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
         upload_to='avatars/', default='avatars/default_avatar.png', verbose_name="Ảnh đại diện"
     )
 
+    # THÊM MỚI DÒNG NÀY:
+    avatar_external = models.URLField(max_length=500, blank=True, null=True)
+
+    # THÊM MỚI HÀM NÀY:
+    def get_avatar_url(self):
+        if self.avatar_external: return self.avatar_external
+        return self.avatar.url if self.avatar else '/static/avatars/default_avatar.png'
+
     is_premium = models.BooleanField(
         default=False, verbose_name="Gói Premium"
     )
