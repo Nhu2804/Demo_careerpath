@@ -10,7 +10,8 @@ def save_avatar_from_google(backend, user, response, *args, **kwargs):
     if backend.name == 'google-oauth2':
         url = response.get('picture')
         if url and user:
-            user.avatar_external = url
+            # Chỉ lưu cái link, không tải file về
+            user.avatar_url = url
             user.save()
 
 def associate_by_email(backend, details, user=None, *args, **kwargs):

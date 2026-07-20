@@ -44,13 +44,18 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
         upload_to='avatars/', default='avatars/default_avatar.png', verbose_name="Ảnh đại diện"
     )
 
-    # THÊM MỚI DÒNG NÀY:
-    avatar_external = models.URLField(max_length=500, blank=True, null=True)
+    # THÊM TRƯỜNG NÀY (Để lưu link Google)
+    avatar_url = models.URLField(max_length=500, blank=True, null=True)
 
-    # THÊM MỚI HÀM NÀY:
     def get_avatar_url(self):
-        if self.avatar_external: return self.avatar_external
-        return self.avatar.url if self.avatar else '/static/avatars/default_avatar.png'
+        # 1. Ưu tiên link từ Google
+        if self.avatar_url:
+            return self.avatar_url
+        # 2. Nếu không có link Google thì dùng ảnh upload (nếu có)
+        if self.avatar and hasattr(self.avatar, 'url'):
+            return self.avatar.url
+        # 3. Cuối cùng là ảnh mặc định (Để trong STATIC để không bị mất)
+        return "/static/images/default_avatar.png"
 
     is_premium = models.BooleanField(
         default=False, verbose_name="Gói Premium"
