@@ -29,7 +29,7 @@ SECRET_KEY = os.getenv('DJANGO_SECRET_KEY', 'dev-secret-key-123')
 # DEBUG = True
 DEBUG = os.getenv("DEBUG", "False") == "True"
 ALLOWED_HOSTS = ['careerpath.io.vn', 'www.careerpath.io.vn', '103.173.66.148', 'www.google.com', '127.0.0.1', 'localhost', 'demo-careerpath.onrender.com',]
-CSRF_TRUSTED_ORIGINS = ['https://careerpath.io.vn', 'https://www.careerpath.io.vn']
+CSRF_TRUSTED_ORIGINS = ['https://careerpath.io.vn', 'https://www.careerpath.io.vn', 'https://demo-careerpath.onrender.com']
 
 # --- QUAN TRỌNG: Cấu hình HTTPS cho Render ---
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
@@ -110,8 +110,10 @@ LOGGING = {
             'class': 'logging.StreamHandler',
         },
         'file': {
-            'class': 'logging.FileHandler',
-            'filename': 'debug.log',
+            'class': 'logging.handlers.RotatingFileHandler',
+            'filename': str(BASE_DIR / "logs" / "django.log"), # <--- Dùng đường dẫn tuyệt đối
+            'maxBytes': 5 * 1024 * 1024,
+            'backupCount': 3,
         },
     },
     'loggers': {
@@ -281,31 +283,29 @@ MEDIA_ROOT = BASE_DIR / "media"
 LOGIN_REDIRECT_URL = '/'          # sau đăng nhập google chuyển về trang chủ
 LOGOUT_REDIRECT_URL = '/'         # sau đăng xuất chuyển về trang chủ
 
-from pathlib import Path
-BASE_DIR = Path(__file__).resolve().parent.parent
 LOG_DIR = BASE_DIR / "logs"
 LOG_DIR.mkdir(exist_ok=True)
-LOGGING = {
-    "version": 1,
-    "disable_existing_loggers": False,
-    "formatters": {
-        "verbose": {"format": "%(asctime)s %(levelname)s [%(name)s] %(message)s"},
-    },
-    "handlers": {
-        "file": {
-            "class": "logging.handlers.RotatingFileHandler",
-            "filename": str(LOG_DIR / "django.log"),   # <— tuyệt đối, nằm trong dự án
-            "maxBytes": 5 * 1024 * 1024,
-            "backupCount": 3,
-            "formatter": "verbose",
-            "encoding": "utf-8",
-        },
-        "console": {"class": "logging.StreamHandler"},
-    },
-    "loggers": {
-        "django": {"handlers": ["file", "console"], "level": "INFO", "propagate": True},
-    },
-}
+# LOGGING = {
+#     "version": 1,
+#     "disable_existing_loggers": False,
+#     "formatters": {
+#         "verbose": {"format": "%(asctime)s %(levelname)s [%(name)s] %(message)s"},
+#     },
+#     "handlers": {
+#         "file": {
+#             "class": "logging.handlers.RotatingFileHandler",
+#             "filename": str(LOG_DIR / "django.log"),   # <— tuyệt đối, nằm trong dự án
+#             "maxBytes": 5 * 1024 * 1024,
+#             "backupCount": 3,
+#             "formatter": "verbose",
+#             "encoding": "utf-8",
+#         },
+#         "console": {"class": "logging.StreamHandler"},
+#     },
+#     "loggers": {
+#         "django": {"handlers": ["file", "console"], "level": "INFO", "propagate": True},
+#     },
+# }
 
 JAZZMIN_SETTINGS = {
     # --- Tiêu đề & Thương hiệu ---
