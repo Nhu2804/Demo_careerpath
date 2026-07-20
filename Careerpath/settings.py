@@ -136,16 +136,22 @@ LOGGING = {
 #     }
 # }
 
+import dj_database_url
 DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.postgresql",
-        "NAME": os.getenv("PGDATABASE"),
-        "USER": os.getenv("PGUSER"),
-        "PASSWORD": os.getenv("PGPASSWORD"),
-        "HOST": os.getenv("PGHOST"),
-        "PORT": os.getenv("PGPORT"),
-    }
+    'default': dj_database_url.config(
+        # Lấy từ biến môi trường DATABASE_URL trên Render
+        default=os.getenv('DATABASE_URL'),
+        conn_max_age=600,
+        conn_health_checks=True,
+    )
 }
+
+# Nếu DATABASE_URL không tồn tại (chạy ở localhost), bạn có thể để mặc định là sqlite để test nhanh
+if not DATABASES['default']:
+    DATABASES['default'] = {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
+    }
 
 # DATABASES = {
 #     'default': {
