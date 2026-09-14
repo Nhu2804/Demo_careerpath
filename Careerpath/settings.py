@@ -163,7 +163,7 @@ if not DATABASES['default']:
 # DATABASES = {
 #     'default': {
 #         'ENGINE': 'django.db.backends.mysql',
-#         'NAME': 'exe1',
+#         'NAME': 'exe2',
 #         'USER': 'root',
 #         'PASSWORD': '12345',
 #         'HOST': '127.0.0.1',  
