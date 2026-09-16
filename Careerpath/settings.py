@@ -318,7 +318,7 @@ JAZZMIN_SETTINGS = {
 
     # --- CSS & JS ---
     "custom_css": "css/custom.css", # Đổi tên file CSS cho phù hợp
-    "user_avatar": "avatar",        # tên field ImageField trên CustomUser
+    "user_avatar": "avatar_display_url",        # tên field ImageField trên CustomUser
     "show_user_menu": True,  
 
     # 💡 [CẢI TIẾN] CẬP NHẬT ICONS CHO PHÙ HỢP HƠN
