@@ -25,14 +25,8 @@
                     <aside class="info-tab-sidebar">
                         <!-- ... (Phần avatar giữ nguyên) ... -->
                         <div class="info-avatar-wrapper" id="avatar-wrapper">
-                            {% if user.avatar %}
-                                <img src="{{ user.avatar.url }}" alt="Ảnh đại diện" class="info-avatar" id="profile-avatar-img">
-                            {% else %}
-                                <div class="info-avatar-placeholder">
-                                    <span>{{ user.username|first|upper }}</span>
-                                </div>
-                            {% endif %}
-                            
+                            <img src="{{ user.avatar_display_url }}" alt="Ảnh đại diện" class="info-avatar" id="profile-avatar-img">
+
                             <form id="avatar-upload-form" style="display: none;">
                                 {% csrf_token %}
                                 <input type="file" id="avatar-input" name="avatar" accept="image/*">
@@ -40,7 +34,7 @@
                             <label for="avatar-input" class="info-avatar-upload-btn" title="Thay đổi ảnh đại diện">
                                 <i class="fas fa-camera"></i>
                             </label>
-                            
+
                             <div class="avatar-loader" id="avatar-loader"><div class="spinner"></div></div>
                         </div>
                     </aside>

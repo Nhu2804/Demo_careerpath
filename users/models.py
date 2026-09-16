@@ -2,6 +2,7 @@
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
 from django.db import models
 from django.conf import settings
+from django.templatetags.static import static
 
 class CustomUserManager(BaseUserManager):
     def create_user(self, username, email, password=None, **extra_fields):
@@ -41,9 +42,11 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
         auto_now_add=True, verbose_name="Ngày tham gia"
     )
     avatar = models.ImageField(
-        upload_to='avatars/', default='avatars/default_avatar.png', verbose_name="Ảnh đại diện"
+        upload_to='avatars/', blank=True, null=True, verbose_name="Ảnh đại diện"
     )
-
+    google_avatar_url = models.URLField(
+        blank=True, null=True, verbose_name="Avatar Google"
+    )
     is_premium = models.BooleanField(
         default=False, verbose_name="Gói Premium"
     )
@@ -74,6 +77,17 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
 
     def __str__(self):
         return self.username
+    
+    @property
+    def avatar_display_url(self):
+        """
+        Ưu tiên: avatar tự upload > avatar Google > ảnh mặc định (static).
+        """
+        if self.avatar:
+            return self.avatar.url
+        if self.google_avatar_url:
+            return self.google_avatar_url
+        return static('images/default_avatar.png')
 
     # users/models.py (thêm dưới class CustomUser)
 class SuperUserProxy(CustomUser):

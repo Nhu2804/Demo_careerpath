@@ -1,0 +1,160 @@
+/* --- Kế thừa các biến và style chung --- */
+:root {
+    --primary-green: #28a745; 
+    --primary-yellow: #ffc107; 
+    --dark-green: #1e7e34; 
+    --text-dark: #212529; 
+    --text-medium: #6c757d; 
+    --border-color: #dee2e6;
+    --box-shadow-soft: 0 4px 15px rgba(0, 0, 0, 0.06);
+    --font-primary: 'Be Vietnam Pro', sans-serif;
+    --light-green-bg: #e6f7eb; 
+    --light-yellow-bg: #fff8e1;
+}
+
+/* === ÁP DỤNG STYLE CHUNG CHO TRANG === */
+.premium-section {
+  background: linear-gradient(145deg, var(--light-green-bg) 0%, var(--light-yellow-bg) 100%);
+  font-family: var(--font-primary), sans-serif;
+}
+.section-title {
+  font-family: var(--font-primary);
+  font-size: clamp(2.2rem, 5vw, 3rem);
+  font-weight: 800;
+}
+.lead-line {
+  font-family: var(--font-secondary, sans-serif);
+  font-size: 1.1rem;
+  color: var(--text-medium);
+  line-height: 1.7;
+  max-width: 750px;
+}
+
+/* === THẺ THANH TOÁN CHÍNH === */
+.payment-card {
+  background-color: #ffffff;
+  border: none;
+  border-radius: 20px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+  overflow: hidden;
+  position: relative;
+}
+.payment-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 6px;
+  background: linear-gradient(90deg, var(--primary-green), var(--primary-yellow));
+}
+
+.payment-layout {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: stretch;
+}
+
+/* === Phần mã QR === */
+.qr-code-wrapper {
+  flex: 0 0 45%;
+  padding: 2rem;
+  text-align: center;
+  background-color: #ffffff;
+  border-right: 1px solid #e9ecef;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.qr-code-wrapper h5 {
+  font-family: var(--font-primary);
+  font-weight: 600;
+  font-size: 1.1rem;
+  color: var(--text-dark);
+  margin-bottom: 1rem;
+}
+
+.qr-code-image {
+  max-width: 220px; /* === CHỈNH SỬA: Tăng kích thước QR code === */
+  width: 100%;
+  height: auto;
+  border-radius: 16px;
+  border: none;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+}
+
+/* === Phần thông tin chi tiết === */
+.payment-details-wrapper {
+  padding: 2rem;
+  flex: 1;
+}
+
+/* Danh sách thông tin chuyển khoản */
+.info-list {
+  list-style: none;
+  padding-left: 0;
+  font-size: 0.95rem;
+}
+.info-list li {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.8rem 0;
+  border-bottom: 1px solid #e9ecef;
+}
+.info-list li:last-child { border-bottom: none; }
+.info-list .text-muted { color: var(--text-medium) !important; }
+.info-list strong { font-family: var(--font-primary); color: var(--text-dark); font-weight: 600; }
+#order-id {
+    font-weight: 700;
+    color: var(--primary-green);
+    background-color: var(--light-green-bg);
+    padding: 0.2rem 0.5rem;
+    border-radius: 6px;
+}
+
+/* Khung nội dung chuyển khoản */
+.transfer-memo {
+  margin-top: 1.25rem;
+  padding: 1rem;
+  background-color: var(--light-yellow-bg);
+  border: 2px dashed var(--primary-yellow);
+  border-radius: 12px;
+  text-align: center;
+}
+.transfer-memo p { margin-bottom: 0.5rem; font-size: 0.9rem; font-weight: 500; color: #a0522d; }
+.transfer-memo h5 { font-family: var(--font-primary); font-size: 1.3rem; font-weight: 800; color: var(--text-dark); letter-spacing: 1.5px; }
+
+/* Thông báo và Spinner */
+#loading-spinner { padding: 6rem 4rem; }
+.spinner-border { border-color: var(--light-green-bg); border-right-color: var(--primary-green) !important; }
+#loading-spinner .text-muted { font-weight: 500; font-size: 1.1rem; }
+
+/* === Nút quay về === */
+.final-actions {
+    margin-top: 2rem;
+    text-align: center;
+}
+.final-actions .btn-secondary {
+    font-family: var(--font-primary);
+    font-weight: 600;
+    border-radius: 50px;
+    padding: 0.7rem 1.8rem;
+    color: #fff;
+    background-color: var(--primary-green);
+    border: 2px solid var(--primary-green);
+    box-shadow: 0 4px 15px rgba(40, 167, 69, 0.2);
+    transition: all 0.3s ease;
+}
+.final-actions .btn-secondary:hover {
+    background-color: var(--dark-green);
+    border-color: var(--dark-green);
+    color: #fff;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(40, 167, 69, 0.3);
+}
+
+@media (max-width: 991px) {
+  .payment-layout { flex-direction: column; }
+  .qr-code-wrapper { border-right: none; border-bottom: 1px solid var(--border-color); }
+}
