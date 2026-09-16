@@ -121,7 +121,7 @@
             <div class="mobile-user-actions">
                 {% if request.user.is_authenticated %}
                     <a class="nav-link d-flex align-items-center mb-3" href="{% url 'users:profile' %}">
-                        <img src="{{ request.user.avatar_display_url }}" class="rounded-circle me-3" width="40" height="40">
+                        <img src="{{ request.user.avatar_display_url }}" class="rounded-circle me-3" width="40" height="40" id="header-user-avatar">
                         <div>
                             <strong class="d-block">
                                 {% if request.user.first_name or request.user.last_name %}
