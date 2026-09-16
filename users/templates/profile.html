@@ -381,7 +381,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (data.status === 'success') {
                     avatarImg.src = data.new_avatar_url;
                     const headerAvatar = document.getElementById('header-user-avatar');
-                    headerAvatars.forEach(img => img.src = data.new_avatar_url);
+                    if(headerAvatar) headerAvatar.src = data.new_avatar_url;
                     showToast('Cập nhật ảnh đại diện thành công!', 'success');
                 } else {
                     showToast('Lỗi: ' + data.message, 'error');
